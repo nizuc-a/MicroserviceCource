@@ -8,7 +8,7 @@ namespace MicroserviceCourse.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class EventController(IEventService eventService) : ControllerBase
+public class EventsController(IEventService eventService) : ControllerBase
 {
     private readonly IEventService _eventService = eventService;
 
@@ -20,7 +20,7 @@ public class EventController(IEventService eventService) : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Event>> GetEvent(int id)
+    public async Task<ActionResult<Event>> GetEventById(int id)
     {
         var value = await _eventService.GetById(id);
         if (value == null)
@@ -38,7 +38,7 @@ public class EventController(IEventService eventService) : ControllerBase
         var data = dto.AddEventDtoToEvent();
         await _eventService.AddEvent(data);
 
-        return Created();
+        return CreatedAtAction(nameof(GetEventById), new { id = data.Id }, data);
     }
 
     [HttpPut("{id:int}")]
@@ -47,6 +47,9 @@ public class EventController(IEventService eventService) : ControllerBase
         var data = await _eventService.GetById(id);
         if (data is null)
             return NotFound();
+        
+        if (dto.StartAt > dto.EndAt)
+            return BadRequest("StartAt must be less than EndAt");
         
         data.UpdateEvent(dto);
         await _eventService.UpdateEvent(data);
