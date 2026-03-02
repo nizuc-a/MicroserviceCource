@@ -1,5 +1,4 @@
-﻿using MicroserviceCourse.Extension;
-using MicroserviceCourse.Interfaces.Services;
+﻿using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Model.DTO.Event;
 using MicroserviceCourse.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,22 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace MicroserviceCourse.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("events")]
 public class EventsController(IEventService eventService) : ControllerBase
 {
-    private readonly IEventService _eventService = eventService;
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Event>>> GetAll()
     {
-        var events = await _eventService.GetAll();
+        var events = await eventService.GetAll();
         return Ok(events);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Event>> GetEventById(int id)
     {
-        var value = await _eventService.GetById(id);
+        var value = await eventService.GetById(id);
         if (value == null)
             return NotFound();
         
@@ -34,36 +31,24 @@ public class EventsController(IEventService eventService) : ControllerBase
     {
         if (dto.StartAt > dto.EndAt)
             return BadRequest("StartAt must be less than EndAt");
+        
+        var result = await eventService.AddEvent(dto);
 
-        var data = dto.AddEventDtoToEvent();
-        await _eventService.AddEvent(data);
-
-        return CreatedAtAction(nameof(GetEventById), new { id = data.Id }, data);
+        return CreatedAtAction(nameof(GetEventById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] UpdateEventDto dto)
+    public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventDto dto)
     {
-        var data = await _eventService.GetById(id);
-        if (data is null)
-            return NotFound();
-        
         if (dto.StartAt > dto.EndAt)
             return BadRequest("StartAt must be less than EndAt");
         
-        data.UpdateEvent(dto);
-        await _eventService.UpdateEvent(data);
-        return Ok(data);
+        return await eventService.UpdateEvent(id, dto);
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<ActionResult> DeleteEvent(int id)
-    {
-        var data = await _eventService.GetById(id);
-        if (data is null)
-            return NotFound();
-        
-        await _eventService.DeleteEvent(data);
-        return NoContent();
+    public async Task<IActionResult> DeleteEvent(int id)
+    { 
+        return await eventService.DeleteEventById(id);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using MicroserviceCourse.Data;
 using MicroserviceCourse.Interfaces.Services;
+using MicroserviceCourse.Model.DTO.Event;
 using MicroserviceCourse.Model.Entity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace MicroserviceCourse.Services;
@@ -19,22 +21,35 @@ public class EventService(AppDbContext context) : IEventService
         return await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<Event> AddEvent(Event data)
+    public async Task<Event> AddEvent(AddEventDto dto)
     {
+        Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt);
         _context.Events.Add(data);
         await _context.SaveChangesAsync();
         return data;
     }
 
-    public async Task UpdateEvent(Event data)
+    public async Task<IActionResult> UpdateEvent(int id, UpdateEventDto data)
     {
-        _context.Events.Update(data);
+        var entity = await GetById(id);
+        if(entity == null)
+            return new NotFoundResult();
+        
+        entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
+        
+        _context.Events.Update(entity);
         await _context.SaveChangesAsync();
+        return new OkResult();
     }
 
-    public async Task DeleteEvent(Event data)
+    public async Task<IActionResult> DeleteEventById(int id)
     {
-        _context.Events.Remove(data);
+        var entity = await GetById(id);
+        if(entity == null)
+            return new NotFoundResult();
+        
+        _context.Events.Remove(entity);
         await _context.SaveChangesAsync();
+        return new OkResult();
     }
 }

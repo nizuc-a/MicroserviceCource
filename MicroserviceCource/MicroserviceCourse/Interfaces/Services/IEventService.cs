@@ -1,4 +1,6 @@
-﻿using MicroserviceCourse.Model.Entity;
+﻿using MicroserviceCourse.Model.DTO.Event;
+using MicroserviceCourse.Model.Entity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MicroserviceCourse.Interfaces.Services;
 
@@ -22,19 +24,20 @@ public interface IEventService
     /// </summary>
     /// <param name="data">Событие которое нужно добавить</param>
     /// <returns>True - если операция прошла успешно, False - если нет.</returns>
-    Task<Event> AddEvent(Event data);
+    Task<Event> AddEvent(AddEventDto data);
 
     /// <summary>
     /// Обновить событие.
     /// </summary>
-    /// <param name="data">Событие которое нужно обновить</param>
+    /// <param name="id">id обновляемой сущности</param>
+    /// <param name="data">Источник обновления</param>
     /// <returns>True - если операция прошла успешно, False - если нет.</returns>
-    Task UpdateEvent(Event data);
+    Task<IActionResult> UpdateEvent(int id, UpdateEventDto data);
     
     /// <summary>
     /// Удалить событие.
     /// </summary>
-    /// <param name="data">Событие которое нужно удалить</param>
+    /// <param name="id">Id события которое нужно удалить</param>
     /// <returns>True - если операция прошла успешно, False - если нет.</returns>
-    Task DeleteEvent(Event data);
+    Task<IActionResult> DeleteEventById(int id);
 }
