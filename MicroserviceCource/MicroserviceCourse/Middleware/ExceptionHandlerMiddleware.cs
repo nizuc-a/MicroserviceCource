@@ -33,7 +33,7 @@ public class ExceptionHandlerMiddleware
             httpContext.Request.Method,
             httpContext.Request.Path,
             httpContext.Request.Headers["x-request-id"]);
-        
+
         if (httpContext.Response.HasStarted)
         {
             return;
@@ -47,20 +47,21 @@ public class ExceptionHandlerMiddleware
             Detail = ex.Message,
             Instance = httpContext.Request.Path
         };
-        
+
         await httpContext.Response.WriteAsJsonAsync(error);
     }
-    
+
     private static string MapTypeLink(Exception ex)
         => ex switch
-        { 
-            
+        {
+            ArgumentException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
-    
+
     private static int MapStatusCode(Exception ex)
         => ex switch
         {
+            ArgumentException => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status500InternalServerError
         };
 }

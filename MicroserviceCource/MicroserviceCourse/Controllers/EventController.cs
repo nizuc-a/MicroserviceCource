@@ -11,11 +11,13 @@ public class EventsController(IEventService eventService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Event>>> GetAll(
-        [FromQuery] string? title = null, 
-        [FromQuery] DateTime? from = null, 
-        [FromQuery] DateTime? to = null)
+        [FromQuery] string? title = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var events = await eventService.GetAll(title, from, to);
+        var events = await eventService.GetAll(title, from, to, pageNumber, pageSize);
         return Ok(events);
     }
 
@@ -32,9 +34,6 @@ public class EventsController(IEventService eventService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Event>> AddEvent([FromBody] AddEventDto dto)
     {
-        if (dto.StartAt > dto.EndAt)
-            return BadRequest("StartAt must be less than EndAt");
-
         var result = await eventService.AddEvent(dto);
 
         return CreatedAtAction(nameof(GetEventById), new { id = result.Id }, result);
@@ -43,9 +42,6 @@ public class EventsController(IEventService eventService) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventDto dto)
     {
-        if (dto.StartAt > dto.EndAt)
-            return BadRequest("StartAt must be less than EndAt");
-
         return await eventService.UpdateEvent(id, dto);
     }
 

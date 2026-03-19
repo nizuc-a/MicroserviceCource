@@ -10,7 +10,7 @@ public interface IEventService
     /// Получить все события.
     /// </summary>
     /// <returns>Список событий.</returns>
-    Task<IEnumerable<Event>> GetAll(string? title, DateTime? from, DateTime? to);
+    Task<PaginatedResult> GetAll(string? title, DateTime? from, DateTime? to, int pageNumber = 1, int pageSize = 10);
 
     /// <summary>
     /// Получить событие по идентификатору.
