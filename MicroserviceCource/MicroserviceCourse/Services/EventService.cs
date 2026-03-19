@@ -9,23 +9,32 @@ namespace MicroserviceCourse.Services;
 
 public class EventService(AppDbContext context) : IEventService
 {
-    private readonly AppDbContext _context = context;
-
-    public async Task<IEnumerable<Event>> GetAll()
+    public async Task<IEnumerable<Event>> GetAll(string? title, DateTime? from, DateTime? to)
     {
-        return await _context.Events.ToListAsync();
+        var query = context.Events.AsQueryable();
+        
+        if(!string.IsNullOrWhiteSpace(title))
+            query = query.Where(e => e.Title.ToLower().Contains(title.ToLower()));
+        
+        if(from.HasValue)
+            query = query.Where(e => e.StartAt >= from.Value);
+        
+        if(to.HasValue)
+            query = query.Where(e => e.EndAt <= to.Value);
+        
+        return await query.ToListAsync();
     }
 
     public async Task<Event?> GetById(int id)
     {
-        return await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        return await context.Events.FirstOrDefaultAsync(e => e.Id == id);
     }
 
     public async Task<Event> AddEvent(AddEventDto dto)
     {
         Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt);
-        _context.Events.Add(data);
-        await _context.SaveChangesAsync();
+        context.Events.Add(data);
+        await context.SaveChangesAsync();
         return data;
     }
 
@@ -37,8 +46,8 @@ public class EventService(AppDbContext context) : IEventService
         
         entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
         
-        _context.Events.Update(entity);
-        await _context.SaveChangesAsync();
+        context.Events.Update(entity);
+        await context.SaveChangesAsync();
         return new OkResult();
     }
 
@@ -48,8 +57,8 @@ public class EventService(AppDbContext context) : IEventService
         if(entity == null)
             return new NotFoundResult();
         
-        _context.Events.Remove(entity);
-        await _context.SaveChangesAsync();
+        context.Events.Remove(entity);
+        await context.SaveChangesAsync();
         return new OkResult();
     }
 }

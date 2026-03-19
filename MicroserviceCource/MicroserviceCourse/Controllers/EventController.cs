@@ -10,9 +10,12 @@ namespace MicroserviceCourse.Controllers;
 public class EventsController(IEventService eventService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Event>>> GetAll()
+    public async Task<ActionResult<IEnumerable<Event>>> GetAll(
+        [FromQuery] string? title = null, 
+        [FromQuery] DateTime? from = null, 
+        [FromQuery] DateTime? to = null)
     {
-        var events = await eventService.GetAll();
+        var events = await eventService.GetAll(title, from, to);
         return Ok(events);
     }
 
@@ -22,16 +25,16 @@ public class EventsController(IEventService eventService) : ControllerBase
         var value = await eventService.GetById(id);
         if (value == null)
             return NotFound();
-        
+
         return Ok(value);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Event>> AddEvent([FromBody]AddEventDto dto)
+    public async Task<ActionResult<Event>> AddEvent([FromBody] AddEventDto dto)
     {
         if (dto.StartAt > dto.EndAt)
             return BadRequest("StartAt must be less than EndAt");
-        
+
         var result = await eventService.AddEvent(dto);
 
         return CreatedAtAction(nameof(GetEventById), new { id = result.Id }, result);
@@ -42,13 +45,13 @@ public class EventsController(IEventService eventService) : ControllerBase
     {
         if (dto.StartAt > dto.EndAt)
             return BadRequest("StartAt must be less than EndAt");
-        
+
         return await eventService.UpdateEvent(id, dto);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteEvent(int id)
-    { 
+    {
         return await eventService.DeleteEventById(id);
     }
 }
