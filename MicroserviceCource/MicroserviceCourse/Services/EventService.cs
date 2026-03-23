@@ -37,7 +37,7 @@ public class EventService(AppDbContext context) : IEventService
         return result;
     }
 
-    public async Task<Event?> GetById(int id)
+    public async Task<Event> GetById(int id)
     {
         var entity = await context.Events.FirstOrDefaultAsync(e => e.Id == id);
         
@@ -59,9 +59,6 @@ public class EventService(AppDbContext context) : IEventService
         ArgumentOutOfRangeException.ThrowIfGreaterThan(data.StartAt, data.EndAt);
         
         var entity = await GetById(id);
-
-        if (entity == null)
-            throw new KeyNotFoundException($"Event with Id {id} not found");
         
         entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
         
@@ -72,9 +69,6 @@ public class EventService(AppDbContext context) : IEventService
     public async Task DeleteEventById(int id)
     {
         var entity = await GetById(id);
-
-        if (entity == null)
-            throw new KeyNotFoundException($"Event with Id {id} not found");
         
         context.Events.Remove(entity);
         await context.SaveChangesAsync();

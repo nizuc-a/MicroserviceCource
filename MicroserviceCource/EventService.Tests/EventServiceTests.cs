@@ -154,11 +154,11 @@ public class EventServiceTests
     }
     
     [Fact]
-    public async Task GetById_ArgumentNullException()
+    public async Task GetById_KeyNotFoundException()
     {
         var id = 0;
         
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await _eventService.GetById(id));
+        await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.GetById(id));
     }
 
     #endregion
@@ -241,7 +241,7 @@ public class EventServiceTests
     }
     
     [Fact]
-    public async Task UpdateEvent_ArgumentNullException()
+    public async Task UpdateEvent_KeyNotFoundException()
     {
         int id = -1;
         var dto = new UpdateEventDto()
@@ -252,7 +252,7 @@ public class EventServiceTests
             EndAt = DateTime.Now.AddMonths(1),
         };
         
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await _eventService.UpdateEvent(id,dto));
+        await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.UpdateEvent(id,dto));
     }
 
     #endregion
@@ -271,11 +271,11 @@ public class EventServiceTests
     }
     
     [Fact]
-    public async Task DeleteEventById_ArgumentNullException()
+    public async Task DeleteEventById_KeyNotFoundException()
     {
         var id = -1;
         
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await _eventService.DeleteEventById(id));
+        await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.DeleteEventById(id));
     }
 
     #endregion

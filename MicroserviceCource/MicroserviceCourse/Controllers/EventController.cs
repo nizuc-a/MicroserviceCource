@@ -25,8 +25,6 @@ public class EventsController(IEventService eventService) : ControllerBase
     public async Task<ActionResult<Event>> GetEventById(int id)
     {
         var value = await eventService.GetById(id);
-        if (value == null)
-            return NotFound();
 
         return Ok(value);
     }

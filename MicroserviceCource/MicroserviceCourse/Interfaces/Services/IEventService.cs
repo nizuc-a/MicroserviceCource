@@ -1,6 +1,5 @@
 ﻿using MicroserviceCourse.Model.DTO.Event;
 using MicroserviceCourse.Model.Entity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MicroserviceCourse.Interfaces.Services;
 
@@ -17,7 +16,7 @@ public interface IEventService
     /// </summary>
     /// <param name="id">идентификатор</param>
     /// <returns>Событие.</returns>
-    Task<Event?> GetById(int id);
+    Task<Event> GetById(int id);
 
     /// <summary>
     /// Добавить событие.
