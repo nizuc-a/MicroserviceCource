@@ -60,7 +60,7 @@ public class EventServiceTests
     {
         var expectedResult = new PaginatedResult()
         {
-            PageNumber = 1,
+            Page = 1,
             AllElementCount = 3,
             CurrentPageElementCount = 3,
             Events = _events.ToArray()
@@ -68,7 +68,7 @@ public class EventServiceTests
         
         var result = await _eventService.GetAll();
         
-        Assert.Equal(expectedResult.PageNumber, result.PageNumber);
+        Assert.Equal(expectedResult.Page, result.Page);
         Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
         Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
         Assert.Equal(expectedResult.Events.Length, result.Events.Length);
@@ -81,7 +81,7 @@ public class EventServiceTests
 
         var expectedResult = new PaginatedResult()
         {
-            PageNumber = 1,
+            Page = 1,
             AllElementCount = 1,
             CurrentPageElementCount = 1,
             Events = [_events[2]]
@@ -89,7 +89,7 @@ public class EventServiceTests
         
         var result = await _eventService.GetAll(title);
         
-        Assert.Equal(expectedResult.PageNumber, result.PageNumber);
+        Assert.Equal(expectedResult.Page, result.Page);
         Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
         Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
         Assert.Equal(expectedResult.Events.Length, result.Events.Length);
@@ -117,7 +117,7 @@ public class EventServiceTests
         
         var expectedResult = new PaginatedResult()
         {
-            PageNumber = 1,
+            Page = 1,
             AllElementCount = 1,
             CurrentPageElementCount = 1,
             Events = [_events[2]]
@@ -125,7 +125,7 @@ public class EventServiceTests
         
         var result = await _eventService.GetAll(title, dateFrom);
         
-        Assert.Equal(expectedResult.PageNumber, result.PageNumber);
+        Assert.Equal(expectedResult.Page, result.Page);
         Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
         Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
         Assert.Equal(expectedResult.Events.Length, result.Events.Length);

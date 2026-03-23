@@ -14,10 +14,10 @@ public class EventsController(IEventService eventService) : ControllerBase
         [FromQuery] string? title = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
-        [FromQuery] int pageNumber = 1,
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        var events = await eventService.GetAll(title, from, to, pageNumber, pageSize);
+        var events = await eventService.GetAll(title, from, to, page, pageSize);
         return Ok(events);
     }
 

@@ -47,10 +47,6 @@ public class ExceptionHandlerMiddleware
             Status = MapStatusCode(ex),
             Detail = ex.Message,
             Instance = httpContext.Request.Path,
-            Extensions = 
-            {
-                ["requestId"] = httpContext.Request.Headers["x-request-id"].ToString(),
-            }
         };
 
         httpContext.Response.ContentType = "application/problem+json; charset=utf-8";

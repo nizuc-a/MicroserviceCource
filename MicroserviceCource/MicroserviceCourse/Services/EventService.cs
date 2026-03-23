@@ -14,7 +14,7 @@ public class EventService(AppDbContext context) : IEventService
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
         var result = new PaginatedResult();
-        result.PageNumber = page;
+        result.Page = page;
         
         var query = context.Events.AsQueryable();
         
