@@ -14,18 +14,23 @@
    git clone https://github.com/nizuc-a/MicroserviceCource.git
 
 ```
-2) Переключитесь на ветку `sprint-1`:
+
+2) Переключитесь на ветку `sprint-2`:
 
 ```bash
-   git checkout sprint-1
-   cd MicroserviceCource
-
+   git checkout sprint-2
 ```
+
+Для запуска тестов 
+```bash
+   dotnet test
+```
+
 3) Соберите проект:
 
 ```bash
+   cd MicroserviceCource
    dotnet build
-
 ```
 4) Запустите проект:
 
@@ -46,4 +51,7 @@
 
 ### 3. Используемые технологии и библиотеки 
 ASP.NET Core Web API; Swagger для тестирования API; Dependency Injection (DI) для управления зависимостями.
+
+### 4. Нововведения.
+Добавлена фильтрация для получения всех событий. Фильтр вклюает в себя фильтрацию по названию, дате начала и окончания события. Есть возможность использования пагинации.
 
