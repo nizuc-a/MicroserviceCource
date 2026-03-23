@@ -21,14 +21,12 @@
    git checkout sprint-2
 ```
 
-Для запуска тестов 
-```bash
-   dotnet test
-```
-
 3) Соберите проект:
 
 ```bash
+   # Для запуска тестов
+   dotnet test
+
    cd MicroserviceCource
    dotnet build
 ```
