@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MicroserviceCourse.Middleware;
@@ -45,16 +46,22 @@ public class ExceptionHandlerMiddleware
             Title = "An unhandled exception occurred",
             Status = MapStatusCode(ex),
             Detail = ex.Message,
-            Instance = httpContext.Request.Path
+            Instance = httpContext.Request.Path,
+            Extensions = 
+            {
+                ["requestId"] = httpContext.Request.Headers["x-request-id"].ToString(),
+            }
         };
 
+        httpContext.Response.ContentType = "application/problem+json; charset=utf-8";
+        httpContext.Response.StatusCode = MapStatusCode(ex);
         await httpContext.Response.WriteAsJsonAsync(error);
     }
 
     private static string MapTypeLink(Exception ex)
         => ex switch
         {
-            ArgumentNullException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
+            KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
             ArgumentOutOfRangeException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
@@ -62,7 +69,7 @@ public class ExceptionHandlerMiddleware
     private static int MapStatusCode(Exception ex)
         => ex switch
         {
-            ArgumentNullException=> StatusCodes.Status404NotFound,
+            KeyNotFoundException=> StatusCodes.Status404NotFound,
             ArgumentOutOfRangeException => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status500InternalServerError
         };

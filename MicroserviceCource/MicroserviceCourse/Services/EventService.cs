@@ -2,24 +2,21 @@
 using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Model.DTO.Event;
 using MicroserviceCourse.Model.Entity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace MicroserviceCourse.Services;
 
 public class EventService(AppDbContext context) : IEventService
 {
-    public async Task<PaginatedResult> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int pageNumber = 1, int pageSize = 10)
+    public async Task<PaginatedResult> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(pageNumber, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
         var result = new PaginatedResult();
-        result.PageNumber = pageNumber;
+        result.PageNumber = page;
         
         var query = context.Events.AsQueryable();
-        
-        result.AllElementCount =  query.Count();
         
         if(!string.IsNullOrWhiteSpace(title))
             query = query.Where(e => e.Title.ToLower().Contains(title.ToLower()));
@@ -30,7 +27,9 @@ public class EventService(AppDbContext context) : IEventService
         if(to.HasValue)
             query = query.Where(e => e.EndAt <= to.Value);
         
-        query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        result.AllElementCount =  query.Count();
+        
+        query = query.Skip((page - 1) * pageSize).Take(pageSize);
         
         result.Events = await query.ToArrayAsync();
         result.CurrentPageElementCount = result.Events.Length;
@@ -40,11 +39,9 @@ public class EventService(AppDbContext context) : IEventService
 
     public async Task<Event?> GetById(int id)
     {
-        var result = await context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        var entity = await context.Events.FirstOrDefaultAsync(e => e.Id == id);
         
-        ArgumentNullException.ThrowIfNull(result);
-        
-        return result;
+        return entity ?? throw new KeyNotFoundException($"Event with Id {id} not found");
     }
 
     public async Task<Event> AddEvent(AddEventDto dto)
@@ -63,7 +60,8 @@ public class EventService(AppDbContext context) : IEventService
         
         var entity = await GetById(id);
 
-        ArgumentNullException.ThrowIfNull(entity);
+        if (entity == null)
+            throw new KeyNotFoundException($"Event with Id {id} not found");
         
         entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
         
@@ -74,8 +72,9 @@ public class EventService(AppDbContext context) : IEventService
     public async Task DeleteEventById(int id)
     {
         var entity = await GetById(id);
-        
-        ArgumentNullException.ThrowIfNull(entity);
+
+        if (entity == null)
+            throw new KeyNotFoundException($"Event with Id {id} not found");
         
         context.Events.Remove(entity);
         await context.SaveChangesAsync();

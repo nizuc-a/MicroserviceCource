@@ -61,7 +61,7 @@ public class EventServiceTests
         var expectedResult = new PaginatedResult()
         {
             PageNumber = 1,
-            AllElementCount = _events.Count,
+            AllElementCount = 3,
             CurrentPageElementCount = 3,
             Events = _events.ToArray()
         };
@@ -82,7 +82,7 @@ public class EventServiceTests
         var expectedResult = new PaginatedResult()
         {
             PageNumber = 1,
-            AllElementCount = _events.Count,
+            AllElementCount = 1,
             CurrentPageElementCount = 1,
             Events = [_events[2]]
         };
@@ -118,7 +118,7 @@ public class EventServiceTests
         var expectedResult = new PaginatedResult()
         {
             PageNumber = 1,
-            AllElementCount = _events.Count,
+            AllElementCount = 1,
             CurrentPageElementCount = 1,
             Events = [_events[2]]
         };
@@ -136,7 +136,7 @@ public class EventServiceTests
     [InlineData(1, 0)]
     public async Task GetEvents_Pagination_ArgumentOutOfRangeException(int pageNumber, int pageSize)
     {
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.GetAll(pageNumber: pageNumber, pageSize: pageSize));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.GetAll(page: pageNumber, pageSize: pageSize));
     }
     
     #endregion

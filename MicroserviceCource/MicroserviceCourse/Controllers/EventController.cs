@@ -10,7 +10,7 @@ namespace MicroserviceCourse.Controllers;
 public class EventsController(IEventService eventService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Event>>> GetAll(
+    public async Task<ActionResult<PaginatedResult>> GetAll(
         [FromQuery] string? title = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
@@ -44,7 +44,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     {
         await eventService.UpdateEvent(id, dto);
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpDelete("{id:int}")]
@@ -52,6 +52,6 @@ public class EventsController(IEventService eventService) : ControllerBase
     {
         await eventService.DeleteEventById(id);
         
-        return Ok();
+        return NoContent();
     }
 }
