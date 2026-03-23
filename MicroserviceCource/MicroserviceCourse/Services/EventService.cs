@@ -2,54 +2,75 @@
 using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Model.DTO.Event;
 using MicroserviceCourse.Model.Entity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace MicroserviceCourse.Services;
 
 public class EventService(AppDbContext context) : IEventService
 {
-    private readonly AppDbContext _context = context;
-
-    public async Task<IEnumerable<Event>> GetAll()
+    public async Task<PaginatedResult> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10)
     {
-        return await _context.Events.ToListAsync();
+        ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+
+        var result = new PaginatedResult();
+        result.Page = page;
+        
+        var query = context.Events.AsQueryable();
+        
+        if(!string.IsNullOrWhiteSpace(title))
+            query = query.Where(e => e.Title.ToLower().Contains(title.ToLower()));
+        
+        if(from.HasValue)
+            query = query.Where(e => e.StartAt >= from.Value);
+        
+        if(to.HasValue)
+            query = query.Where(e => e.EndAt <= to.Value);
+        
+        result.AllElementCount =  query.Count();
+        
+        query = query.Skip((page - 1) * pageSize).Take(pageSize);
+        
+        result.Events = await query.ToArrayAsync();
+        result.CurrentPageElementCount = result.Events.Length;
+        
+        return result;
     }
 
-    public async Task<Event?> GetById(int id)
+    public async Task<Event> GetById(int id)
     {
-        return await _context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        var entity = await context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        
+        return entity ?? throw new KeyNotFoundException($"Event with Id {id} not found");
     }
 
     public async Task<Event> AddEvent(AddEventDto dto)
     {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(dto.StartAt, dto.EndAt);
+        
         Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt);
-        _context.Events.Add(data);
-        await _context.SaveChangesAsync();
+        context.Events.Add(data);
+        await context.SaveChangesAsync();
         return data;
     }
 
-    public async Task<IActionResult> UpdateEvent(int id, UpdateEventDto data)
+    public async Task UpdateEvent(int id, UpdateEventDto data)
     {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.StartAt, data.EndAt);
+        
         var entity = await GetById(id);
-        if(entity == null)
-            return new NotFoundResult();
         
         entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
         
-        _context.Events.Update(entity);
-        await _context.SaveChangesAsync();
-        return new OkResult();
+        context.Events.Update(entity);
+        await context.SaveChangesAsync();
     }
 
-    public async Task<IActionResult> DeleteEventById(int id)
+    public async Task DeleteEventById(int id)
     {
         var entity = await GetById(id);
-        if(entity == null)
-            return new NotFoundResult();
         
-        _context.Events.Remove(entity);
-        await _context.SaveChangesAsync();
-        return new OkResult();
+        context.Events.Remove(entity);
+        await context.SaveChangesAsync();
     }
 }

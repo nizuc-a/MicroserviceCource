@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroserviceCourse", "MicroserviceCourse\MicroserviceCourse.csproj", "{19E4A3C2-48C5-48A0-8DF5-151BCBA065C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService.Tests", "EventService.Tests\EventService.Tests.csproj", "{23516BB8-9A1F-4678-AA68-F5859A056B7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{19E4A3C2-48C5-48A0-8DF5-151BCBA065C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19E4A3C2-48C5-48A0-8DF5-151BCBA065C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19E4A3C2-48C5-48A0-8DF5-151BCBA065C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23516BB8-9A1F-4678-AA68-F5859A056B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23516BB8-9A1F-4678-AA68-F5859A056B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23516BB8-9A1F-4678-AA68-F5859A056B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23516BB8-9A1F-4678-AA68-F5859A056B7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

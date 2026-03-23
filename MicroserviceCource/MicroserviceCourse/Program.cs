@@ -1,5 +1,6 @@
 using MicroserviceCourse.Data;
 using MicroserviceCourse.Interfaces.Services;
+using MicroserviceCourse.Middleware;
 using MicroserviceCourse.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseAuthorization();
 
