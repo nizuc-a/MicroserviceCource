@@ -54,14 +54,16 @@ public class ExceptionHandlerMiddleware
     private static string MapTypeLink(Exception ex)
         => ex switch
         {
-            ArgumentException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
+            ArgumentNullException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
+            ArgumentOutOfRangeException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
 
     private static int MapStatusCode(Exception ex)
         => ex switch
         {
-            ArgumentException => StatusCodes.Status400BadRequest,
+            ArgumentNullException=> StatusCodes.Status404NotFound,
+            ArgumentOutOfRangeException => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status500InternalServerError
         };
 }

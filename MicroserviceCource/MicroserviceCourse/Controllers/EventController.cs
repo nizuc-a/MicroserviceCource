@@ -42,12 +42,16 @@ public class EventsController(IEventService eventService) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventDto dto)
     {
-        return await eventService.UpdateEvent(id, dto);
+        await eventService.UpdateEvent(id, dto);
+
+        return Ok();
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteEvent(int id)
     {
-        return await eventService.DeleteEventById(id);
+        await eventService.DeleteEventById(id);
+        
+        return Ok();
     }
 }

@@ -40,7 +40,11 @@ public class EventService(AppDbContext context) : IEventService
 
     public async Task<Event?> GetById(int id)
     {
-        return await context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        var result = await context.Events.FirstOrDefaultAsync(e => e.Id == id);
+        
+        ArgumentNullException.ThrowIfNull(result);
+        
+        return result;
     }
 
     public async Task<Event> AddEvent(AddEventDto dto)
@@ -53,29 +57,27 @@ public class EventService(AppDbContext context) : IEventService
         return data;
     }
 
-    public async Task<IActionResult> UpdateEvent(int id, UpdateEventDto data)
+    public async Task UpdateEvent(int id, UpdateEventDto data)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(data.StartAt, data.EndAt);
         
         var entity = await GetById(id);
-        if(entity == null)
-            return new NotFoundResult();
+
+        ArgumentNullException.ThrowIfNull(entity);
         
         entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
         
         context.Events.Update(entity);
         await context.SaveChangesAsync();
-        return new OkResult();
     }
 
-    public async Task<IActionResult> DeleteEventById(int id)
+    public async Task DeleteEventById(int id)
     {
         var entity = await GetById(id);
-        if(entity == null)
-            return new NotFoundResult();
+        
+        ArgumentNullException.ThrowIfNull(entity);
         
         context.Events.Remove(entity);
         await context.SaveChangesAsync();
-        return new OkResult();
     }
 }

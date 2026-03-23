@@ -32,12 +32,12 @@ public interface IEventService
     /// <param name="id">id обновляемой сущности</param>
     /// <param name="data">Источник обновления</param>
     /// <returns>True - если операция прошла успешно, False - если нет.</returns>
-    Task<IActionResult> UpdateEvent(int id, UpdateEventDto data);
+    Task UpdateEvent(int id, UpdateEventDto data);
     
     /// <summary>
     /// Удалить событие.
     /// </summary>
     /// <param name="id">Id события которое нужно удалить</param>
     /// <returns>True - если операция прошла успешно, False - если нет.</returns>
-    Task<IActionResult> DeleteEventById(int id);
+    Task DeleteEventById(int id);
 }
