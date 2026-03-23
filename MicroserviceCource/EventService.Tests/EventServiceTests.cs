@@ -66,7 +66,7 @@ public class EventServiceTests
             Events = _events.ToArray()
         };
         
-        var result = await _eventService.GetAll(null, null, null);
+        var result = await _eventService.GetAll();
         
         Assert.Equal(expectedResult.PageNumber, result.PageNumber);
         Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
@@ -87,7 +87,7 @@ public class EventServiceTests
             Events = [_events[2]]
         };
         
-        var result = await _eventService.GetAll(title, null, null);
+        var result = await _eventService.GetAll(title);
         
         Assert.Equal(expectedResult.PageNumber, result.PageNumber);
         Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
@@ -99,14 +99,36 @@ public class EventServiceTests
     [InlineData("22.04.2010", null, 2)]
     [InlineData(null, "22.12.2015", 2)]
     [InlineData("22.04.2010", "22.12.2015", 1)]
-    public async Task GetEvents_DateToFilter(string? from, string? to, int expectedCount)
+    public async Task GetEvents_DateFilter(string? from, string? to, int expectedCount)
     {
         var fromDate = from  != null ? DateTime.Parse(from) : (DateTime?)null;
         var toDate =  to != null ? DateTime.Parse(to) : (DateTime?)null;
         
-        var result = await _eventService.GetAll(null, fromDate, toDate);
+        var result = await _eventService.GetAll( from: fromDate,  to: toDate);
         
         Assert.Equal(expectedCount, result.Events.Length);
+    }
+    
+    [Fact]
+    public async Task GetEvents_CombinedFilter()
+    {
+        var title = "война";
+        var dateFrom = DateTime.Parse("22.04.2010");
+        
+        var expectedResult = new PaginatedResult()
+        {
+            PageNumber = 1,
+            AllElementCount = _events.Count,
+            CurrentPageElementCount = 1,
+            Events = [_events[2]]
+        };
+        
+        var result = await _eventService.GetAll(title, dateFrom);
+        
+        Assert.Equal(expectedResult.PageNumber, result.PageNumber);
+        Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
+        Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
+        Assert.Equal(expectedResult.Events.Length, result.Events.Length);
     }
     
     [Theory]
@@ -114,7 +136,7 @@ public class EventServiceTests
     [InlineData(1, 0)]
     public async Task GetEvents_Pagination_ArgumentOutOfRangeException(int pageNumber, int pageSize)
     {
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.GetAll(null, null, null, pageNumber, pageSize));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.GetAll(pageNumber: pageNumber, pageSize: pageSize));
     }
     
     #endregion
@@ -243,7 +265,7 @@ public class EventServiceTests
         var id = 1;
         
         await _eventService.DeleteEventById(id);
-        var eventsAfterDelete = await _eventService.GetAll(null, null, null);
+        var eventsAfterDelete = await _eventService.GetAll();
         
         Assert.Equal(2,  eventsAfterDelete.AllElementCount);
     }

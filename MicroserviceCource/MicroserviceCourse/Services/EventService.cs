@@ -9,7 +9,7 @@ namespace MicroserviceCourse.Services;
 
 public class EventService(AppDbContext context) : IEventService
 {
-    public async Task<PaginatedResult> GetAll(string? title, DateTime? from, DateTime? to, int pageNumber = 1, int pageSize = 10)
+    public async Task<PaginatedResult> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int pageNumber = 1, int pageSize = 10)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(pageNumber, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
