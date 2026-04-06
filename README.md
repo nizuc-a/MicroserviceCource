@@ -41,7 +41,6 @@
   * Controllers — контроллеры для обработки HTTP-запросов;
   * Data — файлы, связанные с доступом к данным и контекстом базы данных;
   * Extension — расширения для дополнительного функционала;
-  * Interfaces > Services — интерфейсы для сервисов;
   * Model
     * DTO > Event — объекты передачи данных (DTO) для событий;
     * Entity — сущности данных;
@@ -131,3 +130,21 @@ GET /events?title=tech&from=2024-03-01&to=2024-03-31&page=1&pageSize=10
 }
 ```
 
+#### POST /events/{id}/book
+
+Создать новое бронирование. После создания бронь отправляется в фоновый сервис для обработки.
+
+#### GET /bookings/{id}
+
+Получить бронирование.
+
+#### Сущность Booking
+* Поля:
+   * Guid Id
+   * Guid EventId
+   * Enum BookingStatus Status
+      * Pending — Бронь создана, ожидает обработки
+      * Confirmed — Бронь подтверждена
+      * Rejected — Бронь отклонена
+   * DateTime CreatedAt
+   * DateTime? ProcessedAt
