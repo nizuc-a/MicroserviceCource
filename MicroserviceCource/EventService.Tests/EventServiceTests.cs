@@ -17,24 +17,30 @@ public class EventServiceTests
         ("22.02.2011", "22.12.2014"),
         ("06.03.2015", "22.07.2021")
     ];
+
+    private static Guid[] _guids =
+        [Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()];
     
     public EventServiceTests()
     {
-        _events = new()
-        {
+        _events =
+        [
             new Event("крещение Руси", "988 год", DateTime.Parse(dates[0].Item1), DateTime.Parse(dates[0].Item2))
             {
-                Id = 1,
+                Id = _guids[0],
             },
+
             new Event("битва на реке Калке", "1223 год", DateTime.Parse(dates[1].Item1), DateTime.Parse(dates[1].Item2))
             {
-                Id = 2,
+                Id = _guids[1],
             },
+
             new Event("Отечественная война", "1812 год", DateTime.Parse(dates[2].Item1), DateTime.Parse(dates[2].Item2))
             {
-                Id = 3,
-            },
-        };
+                Id = _guids[2],
+            }
+
+        ];
         
         SetupDbContext();
         
@@ -146,17 +152,17 @@ public class EventServiceTests
     [Fact]
     public async Task GetById_Correct()
     {
-        var id = 1;
+        var id = _guids[0];
         
         var result = await _eventService.GetById(id);
         
-        Assert.NotNull(result);
+        Assert.Equal(result.Id, id);
     }
     
     [Fact]
     public async Task GetById_KeyNotFoundException()
     {
-        var id = 0;
+        var id = Guid.NewGuid();
         
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.GetById(id));
     }
@@ -205,7 +211,7 @@ public class EventServiceTests
     [Fact]
     public async Task UpdateEvent_Correct()
     {
-        int id = 1;
+        var id = _guids[0];
         var dto = new UpdateEventDto()
         {
             Title = "Title",
@@ -228,7 +234,7 @@ public class EventServiceTests
     [Fact]
     public async Task UpdateEvent_ArgumentOutOfRangeException()
     {
-        int id = 1;
+        var id = _guids[0];
         var dto = new UpdateEventDto()
         {
             Title = "Title",
@@ -243,7 +249,7 @@ public class EventServiceTests
     [Fact]
     public async Task UpdateEvent_KeyNotFoundException()
     {
-        int id = -1;
+        var id = Guid.NewGuid();
         var dto = new UpdateEventDto()
         {
             Title = "Title",
@@ -262,7 +268,7 @@ public class EventServiceTests
     [Fact]
     public async Task DeleteEventById_Correct()
     {
-        var id = 1;
+        var id = _guids[0];
         
         await _eventService.DeleteEventById(id);
         var eventsAfterDelete = await _eventService.GetAll();
@@ -273,7 +279,7 @@ public class EventServiceTests
     [Fact]
     public async Task DeleteEventById_KeyNotFoundException()
     {
-        var id = -1;
+        var id = Guid.NewGuid();
         
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.DeleteEventById(id));
     }

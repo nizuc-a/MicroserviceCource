@@ -37,7 +37,7 @@ public class EventService(AppDbContext context) : IEventService
         return result;
     }
 
-    public async Task<Event> GetById(int id)
+    public async Task<Event> GetById(Guid id)
     {
         var entity = await context.Events.FirstOrDefaultAsync(e => e.Id == id);
         
@@ -54,7 +54,7 @@ public class EventService(AppDbContext context) : IEventService
         return data;
     }
 
-    public async Task UpdateEvent(int id, UpdateEventDto data)
+    public async Task UpdateEvent(Guid id, UpdateEventDto data)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(data.StartAt, data.EndAt);
         
@@ -66,7 +66,7 @@ public class EventService(AppDbContext context) : IEventService
         await context.SaveChangesAsync();
     }
 
-    public async Task DeleteEventById(int id)
+    public async Task DeleteEventById(Guid id)
     {
         var entity = await GetById(id);
         

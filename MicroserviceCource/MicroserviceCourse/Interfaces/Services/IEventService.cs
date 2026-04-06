@@ -16,7 +16,7 @@ public interface IEventService
     /// </summary>
     /// <param name="id">идентификатор</param>
     /// <returns>Событие.</returns>
-    Task<Event> GetById(int id);
+    Task<Event> GetById(Guid id);
 
     /// <summary>
     /// Добавить событие.
@@ -29,11 +29,11 @@ public interface IEventService
     /// </summary>
     /// <param name="id">id обновляемой сущности</param>
     /// <param name="data">Источник обновления</param>
-    Task UpdateEvent(int id, UpdateEventDto data);
+    Task UpdateEvent(Guid id, UpdateEventDto data);
     
     /// <summary>
     /// Удалить событие.
     /// </summary>
     /// <param name="id">Id события которое нужно удалить</param>
-    Task DeleteEventById(int id);
+    Task DeleteEventById(Guid id);
 }

@@ -21,8 +21,8 @@ public class EventsController(IEventService eventService) : ControllerBase
         return Ok(events);
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<Event>> GetEventById(int id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<Event>> GetEventById(Guid id)
     {
         var value = await eventService.GetById(id);
 
@@ -37,16 +37,16 @@ public class EventsController(IEventService eventService) : ControllerBase
         return CreatedAtAction(nameof(GetEventById), new { id = result.Id }, result);
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventDto dto)
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventDto dto)
     {
         await eventService.UpdateEvent(id, dto);
 
         return NoContent();
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteEvent(int id)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteEvent(Guid id)
     {
         await eventService.DeleteEventById(id);
         
