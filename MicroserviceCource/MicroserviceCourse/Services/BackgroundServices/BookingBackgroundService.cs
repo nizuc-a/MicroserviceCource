@@ -37,7 +37,6 @@ public class BookingBackgroundService(IBookingTaskQueue taskQueue, IServiceScope
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка обработки брони");
-                throw;
             }
             
             await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);

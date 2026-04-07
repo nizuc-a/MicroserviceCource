@@ -15,7 +15,7 @@ public class BookingController(IBookingService bookingService, IBookingTaskQueue
         
         bookingTaskQueue.Enqueue(newBooking);
 
-        return Accepted("/bookings/{bookingId}",new
+        return Accepted($"/bookings/{newBooking.Id}",new
         {
             bookingId = newBooking.Id,
             eventId = newBooking.EventId,

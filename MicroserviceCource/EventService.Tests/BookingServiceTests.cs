@@ -115,6 +115,17 @@ public class BookingServiceTests
     }
     
     [Fact]
+    public async Task UpdateStatus_CreatedStatus_Correct()
+    {
+        var eventId = Guids[0];
+        const BookingStatus status = BookingStatus.Pending;
+        
+        var createdBooking = await _bookingService.CreateBookingAsync(eventId);
+        
+        Assert.Equal(status, createdBooking.Status);
+    }
+    
+    [Fact]
     public async Task UpdateStatus_KeyNotFoundException()
     {
         var randomId = Guid.NewGuid();
