@@ -19,17 +19,17 @@ public class InMemoryBookingTaskQueueTests
         
         _bookingTaskQueue.Enqueue(booking);
 
-        var canEnqueue = _bookingTaskQueue.TryDequeue(out var bookingResult);
+        var canDequeue = _bookingTaskQueue.TryDequeue(out var bookingResult);
         
-        Assert.True(canEnqueue);
+        Assert.True(canDequeue);
         Assert.Equal(booking, bookingResult);
     }
     
     [Fact]
     public void TryDequeue_Empty_Correct()
     {
-        var canEnqueue = _bookingTaskQueue.TryDequeue(out var bookingResult);
+        var canDequeue = _bookingTaskQueue.TryDequeue(out var bookingResult);
         
-        Assert.False(canEnqueue);
+        Assert.False(canDequeue);
     }
 }
