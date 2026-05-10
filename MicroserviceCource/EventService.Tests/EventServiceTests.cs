@@ -25,17 +25,17 @@ public class EventServiceTests
     {
         _events =
         [
-            new Event("крещение Руси", "988 год", DateTime.Parse(dates[0].Item1), DateTime.Parse(dates[0].Item2))
+            new Event("крещение Руси", "988 год", DateTime.Parse(dates[0].Item1), DateTime.Parse(dates[0].Item2),10)
             {
                 Id = _guids[0],
             },
 
-            new Event("битва на реке Калке", "1223 год", DateTime.Parse(dates[1].Item1), DateTime.Parse(dates[1].Item2))
+            new Event("битва на реке Калке", "1223 год", DateTime.Parse(dates[1].Item1), DateTime.Parse(dates[1].Item2),10)
             {
                 Id = _guids[1],
             },
 
-            new Event("Отечественная война", "1812 год", DateTime.Parse(dates[2].Item1), DateTime.Parse(dates[2].Item2))
+            new Event("Отечественная война", "1812 год", DateTime.Parse(dates[2].Item1), DateTime.Parse(dates[2].Item2),10)
             {
                 Id = _guids[2],
             }
@@ -157,6 +157,8 @@ public class EventServiceTests
         var result = await _eventService.GetById(id);
         
         Assert.Equal(result.Id, id);
+        Assert.Equal(10, result.TotalSeats);
+        Assert.Equal(result.AvailableSeats, result.TotalSeats);
     }
     
     [Fact]
@@ -218,6 +220,8 @@ public class EventServiceTests
             Description = "Description",
             StartAt = DateTime.Now.AddMonths(-1),
             EndAt = DateTime.Now.AddMonths(1),
+            TotalSeats = 3,
+            AvailableSeats = 2
         };
         
         await _eventService.UpdateEvent(id, dto);
@@ -229,6 +233,8 @@ public class EventServiceTests
         Assert.Equal(dto.Description, entity.Description);
         Assert.Equal(dto.StartAt, entity.StartAt);
         Assert.Equal(dto.EndAt, entity.EndAt);
+        Assert.Equal(3,dto.TotalSeats);
+        Assert.Equal(2,dto.AvailableSeats);
     }
     
     [Fact]
@@ -284,5 +290,81 @@ public class EventServiceTests
         await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.DeleteEventById(id));
     }
 
+    #endregion
+    
+    #region TryReserveSeats
+    
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    [InlineData(9)]
+    [InlineData(10)]
+    public async Task TryReserveSeats_Correct(int seats)
+    {
+        var id = _guids[0];
+        
+        var eventEntity = await _eventService.GetById(id);
+        
+        var canReserve = eventEntity.TryReserveSeats(seats);
+        
+        Assert.True(canReserve);
+        Assert.NotEqual(10, eventEntity.AvailableSeats);
+    }
+    
+    [Fact]
+    public async Task TryReserveSeats_Incorrect()
+    {
+        var id = _guids[0];
+        
+        var eventEntity = await _eventService.GetById(id);
+        
+        var canReserve = eventEntity.TryReserveSeats(eventEntity.AvailableSeats+1);
+        
+        Assert.False(canReserve);
+    }
+    
+    #endregion
+    
+    #region ReleaseSeats
+    
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    [InlineData(9)]
+    [InlineData(10)]
+    public async Task ReleaseSeats_Correct(int seats)
+    {
+        var id = _guids[0];
+        
+        var eventEntity = await _eventService.GetById(id);
+        eventEntity.AvailableSeats = 0;
+        
+        eventEntity.ReleaseSeats(seats);
+        
+        Assert.Equal(seats, eventEntity.AvailableSeats);
+    }
+    
+    [Fact]
+    public async Task ReleaseSeats_ArgumentOutOfRangeException()
+    {
+        var id = _guids[0];
+        
+        var eventEntity = await _eventService.GetById(id);
+        
+        Assert.Throws<KeyNotFoundException>( () => eventEntity.ReleaseSeats());
+    }
+    
     #endregion
 }
