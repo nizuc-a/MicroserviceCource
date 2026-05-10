@@ -36,4 +36,11 @@ public interface IEventService
     /// </summary>
     /// <param name="id">Id события которое нужно удалить</param>
     Task DeleteEventById(Guid id, CancellationToken ct = default);
+    
+    /// <summary>
+    /// Сохранить действия.
+    /// </summary>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task SaveChangesAsync(CancellationToken ct = default);
 }

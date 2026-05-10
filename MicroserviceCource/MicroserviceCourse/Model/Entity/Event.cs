@@ -4,15 +4,14 @@ public class Event
 {
     private readonly object _locker = new object();
 
-    public Event(string title, string description, DateTime startAt, DateTime endAt, int totalSeats,
-        int? availableSeats = null)
+    public Event(string title, string description, DateTime startAt, DateTime endAt, int totalSeats)
     {
         Title = title;
         Description = description;
         StartAt = startAt;
         EndAt = endAt;
         TotalSeats = totalSeats;
-        AvailableSeats = availableSeats ?? totalSeats;
+        AvailableSeats = totalSeats;
     }
 
     public Guid Id { get; set; }

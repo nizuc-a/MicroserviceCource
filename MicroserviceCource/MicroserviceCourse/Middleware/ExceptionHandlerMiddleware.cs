@@ -1,3 +1,4 @@
+using MicroserviceCourse.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MicroserviceCourse.Middleware;
@@ -58,6 +59,7 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
             ArgumentOutOfRangeException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
+            NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.10",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
 
@@ -66,6 +68,7 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException=> StatusCodes.Status404NotFound,
             ArgumentOutOfRangeException => StatusCodes.Status400BadRequest,
+            NoAvailableSeatsException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 }

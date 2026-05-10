@@ -1,4 +1,5 @@
 using MicroserviceCourse.Data;
+using MicroserviceCourse.Exceptions;
 using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Model.Entity;
 using MicroserviceCourse.Model.Enum;
@@ -8,11 +9,17 @@ namespace MicroserviceCourse.Services;
 
 public class BookingService(AppDbContext context) : IBookingService
 {
+    private readonly object _bookingLock = new();
+    
     public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct = default)
     {
-        var hasEvent = await context.Events.AnyAsync(x => x.Id == eventId, ct);
-        if (!hasEvent)
+        var value = await context.Events.FirstOrDefaultAsync(x => x.Id == eventId, ct);
+        if (value is null)
             throw new KeyNotFoundException($"Event with Id {eventId} not found");
+
+        var canReserve = value.TryReserveSeats();
+        if(!canReserve)
+            throw new NoAvailableSeatsException("No available seats for this event");
         
         var booking = new Booking(eventId);
         
