@@ -18,17 +18,17 @@ public class BookingServiceTests
     {
         _events =
         [
-            new Event("крещение Руси", "988 год", DateTime.Now, DateTime.Now.AddDays(1))
+            new Event("крещение Руси", "988 год", DateTime.Now, DateTime.Now.AddDays(1),10)
             {
                 Id = Guids[0],
             },
 
-            new Event("битва на реке Калке", "1223 год", DateTime.Now, DateTime.Now.AddDays(1))
+            new Event("битва на реке Калке", "1223 год", DateTime.Now, DateTime.Now.AddDays(1),10)
             {
                 Id = Guids[1],
             },
 
-            new Event("Отечественная война", "1812 год", DateTime.Now, DateTime.Now.AddDays(1))
+            new Event("Отечественная война", "1812 год", DateTime.Now, DateTime.Now.AddDays(1),10)
             {
                 Id = Guids[2],
             }

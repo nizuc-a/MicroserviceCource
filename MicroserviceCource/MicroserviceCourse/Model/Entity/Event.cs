@@ -49,7 +49,7 @@ public class Event
     {
         lock (_locker)
         {
-            if (AvailableSeats + count >= TotalSeats)
+            if (AvailableSeats + count > TotalSeats)
                 throw new ArgumentOutOfRangeException(nameof(count));
             
             AvailableSeats += count;
