@@ -73,6 +73,11 @@ public class BookingBackgroundService(
                     booking.EventId, booking.Id);
 
                 await bookingService.UpdateStatusAsync(booking.Id, BookingStatus.Rejected, stoppingToken);
+                if(eventEntity != null)
+                {
+                    eventEntity.ReleaseSeats();
+                    await  eventService.SaveChangesAsync(stoppingToken);
+                }
                 return;
             }
 
