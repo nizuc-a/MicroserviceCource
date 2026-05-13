@@ -18,4 +18,16 @@ public class Booking
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     
     public DateTime? ProcessedAt { get; set; }
+
+    public void Confirm()
+    {
+        Status = BookingStatus.Confirmed;
+        ProcessedAt = DateTime.Now;
+    }
+    
+    public void Reject()
+    {
+        Status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.Now;
+    }
 }

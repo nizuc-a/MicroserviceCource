@@ -82,5 +82,5 @@ public class EventService(AppDbContext context) : IEventService
         await context.SaveChangesAsync(ct);
     }
 
-    public Task SaveChangesAsync(CancellationToken ct = default)=> context.SaveChangesAsync(ct);
+    public Task SaveChangesAsync(CancellationToken ct = default) => context.SaveChangesAsync(ct);
 }

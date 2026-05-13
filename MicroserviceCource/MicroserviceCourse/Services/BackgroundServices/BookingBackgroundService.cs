@@ -15,6 +15,7 @@ public class BookingBackgroundService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("BookingBackgroundService запущен");
+        var delay = TimeSpan.FromSeconds(2);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -33,7 +34,7 @@ public class BookingBackgroundService(
                 logger.LogError(ex, "Ошибка обработки брони");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+            await Task.Delay(delay, stoppingToken);
         }
 
         logger.LogInformation("BookingBackgroundService остановлен");
@@ -52,7 +53,9 @@ public class BookingBackgroundService(
             return;
         }
 
-        await Task.Delay(2000, stoppingToken);
+        var delay = TimeSpan.FromSeconds(2);
+
+        await Task.Delay(delay, stoppingToken);
 
         using var scope = scopeFactory.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
@@ -65,40 +68,44 @@ public class BookingBackgroundService(
         {
             try
             {
-               eventEntity = await eventService.GetById(booking.EventId, stoppingToken);
+                eventEntity = await eventService.GetById(booking.EventId, stoppingToken);
+                booking = await bookingService.GetBookingByIdAsync(booking.Id, stoppingToken);
             }
             catch (KeyNotFoundException e)
             {
                 logger.LogWarning("Событие {EventId} для брони {BookingId} не найдено",
                     booking.EventId, booking.Id);
 
-                await bookingService.UpdateStatusAsync(booking.Id, BookingStatus.Rejected, stoppingToken);
-                if(eventEntity != null)
-                {
-                    eventEntity.ReleaseSeats();
-                    await  eventService.SaveChangesAsync(stoppingToken);
-                }
+                booking.Reject();
+                eventEntity?.ReleaseSeats();
+
                 return;
             }
 
-            await bookingService.UpdateStatusAsync(booking.Id, BookingStatus.Confirmed, stoppingToken);
+            booking.Confirm();
             logger.LogInformation("Бронь {BookingId} успешно подтверждена", booking.Id);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            booking.Reject();
+            eventEntity?.ReleaseSeats();
+
+            throw;
         }
         catch (Exception e)
         {
             logger.LogError(e, "Необработанная ошибка при обработке брони {BookingId}", booking.Id);
-            await bookingService.UpdateStatusAsync(booking.Id, BookingStatus.Rejected, stoppingToken);
 
-            if(eventEntity != null)
-            {
-                eventEntity.ReleaseSeats();
-                await  eventService.SaveChangesAsync(stoppingToken);
-            }
-            
+            booking.Reject();
+            eventEntity?.ReleaseSeats();
+
             throw;
         }
         finally
         {
+            await eventService.SaveChangesAsync(stoppingToken);
+            await bookingService.SaveChangesAsync(stoppingToken);
+
             _processingSemaphore.Release();
         }
 

@@ -2,8 +2,6 @@
 
 public class Event
 {
-    private readonly object _locker = new object();
-
     public Event(string title, string description, DateTime startAt, DateTime endAt, int totalSeats)
     {
         Title = title;
@@ -35,24 +33,18 @@ public class Event
 
     public bool TryReserveSeats(int count = 1)
     {
-        lock (_locker)
-        {
-            if (AvailableSeats < count)
-                return false;
+        if (AvailableSeats < count)
+            return false;
 
-            AvailableSeats -= count;
-            return true;
-        }
+        AvailableSeats -= count;
+        return true;
     }
 
     public void ReleaseSeats(int count = 1)
     {
-        lock (_locker)
-        {
-            if (AvailableSeats + count > TotalSeats)
-                throw new ArgumentOutOfRangeException(nameof(count));
-            
-            AvailableSeats += count;
-        }
+        if (AvailableSeats + count > TotalSeats)
+            throw new ArgumentOutOfRangeException(nameof(count));
+
+        AvailableSeats += count;
     }
 }

@@ -16,10 +16,13 @@ public class BookingService(AppDbContext context) : IBookingService
         var value = await context.Events.FirstOrDefaultAsync(x => x.Id == eventId, ct);
         if (value is null)
             throw new KeyNotFoundException($"Event with Id {eventId} not found");
-
-        var canReserve = value.TryReserveSeats();
-        if(!canReserve)
-            throw new NoAvailableSeatsException("No available seats for this event");
+        
+        lock (_bookingLock)
+        {
+            var canReserve = value.TryReserveSeats();
+            if (!canReserve)
+                throw new NoAvailableSeatsException("No available seats for this event");
+        }
         
         var booking = new Booking(eventId);
         
@@ -49,4 +52,6 @@ public class BookingService(AppDbContext context) : IBookingService
         
         await context.SaveChangesAsync(ct);
     }
+
+    public Task SaveChangesAsync(CancellationToken ct = default) => context.SaveChangesAsync(ct);
 }
