@@ -1,7 +1,9 @@
+using System.Collections.Concurrent;
 using MicroserviceCourse.Data;
 using MicroserviceCourse.Exceptions;
 using MicroserviceCourse.Model.Entity;
 using MicroserviceCourse.Model.Enum;
+using MicroserviceCourse.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.Tests;
@@ -188,8 +190,8 @@ public class BookingServiceTests
         await Assert.ThrowsAsync<NoAvailableSeatsException>(async () =>
             await _bookingService.CreateBookingAsync(eventId));
     }
-    
-    //Подскажите пожалуйста как здесь правильно сделать тест конкуретности, каждый раз создавать DbContext? Если не сложно приложите пример
+
+    //Подскажите пожалуйста в чем ошибка, вроде обернул Lock, а все равно не выходит
     [Fact]
     public async Task CreateBooking_HighConcurrency_ShouldHandleRaceConditions()
     {
@@ -197,19 +199,35 @@ public class BookingServiceTests
         var eventEntity = await _dbContext.Events.FindAsync(eventId);
         var availableSeats = eventEntity.AvailableSeats;
         var totalAttempts = availableSeats * 2;
-    
-        var tasks = new List<Task<Booking>>();
-        
-        for (int i = 0; i < totalAttempts; i++)
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.Empty}")
+            .Options;
+
+        await using (var context = new AppDbContext(options))
         {
-            tasks.Add(Task.Run(() => _bookingService.CreateBookingAsync(eventId)));
+            context.Events.AddRange(_events);
+            await context.SaveChangesAsync();
         }
-    
+
+        var tasks = new ConcurrentBag<Task<Booking>>();
+
+        Parallel.For(0, totalAttempts, (i) =>
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                await using var contextFor = new AppDbContext(options);
+
+                var bookingService = new BookingService(contextFor);
+                return await bookingService.CreateBookingAsync(eventId);
+            }));
+        });
+
         await Task.WhenAll(tasks);
-        
-        var successfulBookings = tasks.Count(t => t.Result.Status == BookingStatus.Confirmed);
-        var failedBookings = tasks.Count(t => t.Result.Status == BookingStatus.Rejected);
-    
+
+        var successfulBookings = tasks.Count(t => t.Exception is null);
+        var failedBookings = tasks.Count(t => t.Exception is not null);
+
         Assert.Equal(availableSeats, successfulBookings);
         Assert.Equal(totalAttempts - availableSeats, failedBookings);
     }

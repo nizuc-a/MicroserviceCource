@@ -10,46 +10,46 @@ namespace MicroserviceCourse.Services;
 public class BookingService(AppDbContext context) : IBookingService
 {
     private readonly object _bookingLock = new();
-    
+
     public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct = default)
     {
         var value = await context.Events.FirstOrDefaultAsync(x => x.Id == eventId, ct);
         if (value is null)
             throw new KeyNotFoundException($"Event with Id {eventId} not found");
-        
+
         lock (_bookingLock)
         {
             var canReserve = value.TryReserveSeats();
             if (!canReserve)
                 throw new NoAvailableSeatsException("No available seats for this event");
         }
-        
+
         var booking = new Booking(eventId);
-        
         context.Bookings.Add(booking);
+
         await context.SaveChangesAsync(ct);
-        
+
         return booking;
     }
 
     public async Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default)
     {
         var booking = await context.Bookings.FirstOrDefaultAsync(x => x.Id == bookingId, ct);
-        if(booking == null)
+        if (booking == null)
             throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
-        
+
         return booking;
     }
 
     public async Task UpdateStatusAsync(Guid bookingId, BookingStatus status, CancellationToken ct = default)
     {
         var booking = await context.Bookings.FirstOrDefaultAsync(x => x.Id == bookingId, ct);
-        if(booking == null)
+        if (booking == null)
             throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
-        
+
         booking.Status = status;
         booking.ProcessedAt = DateTime.Now;
-        
+
         await context.SaveChangesAsync(ct);
     }
 
