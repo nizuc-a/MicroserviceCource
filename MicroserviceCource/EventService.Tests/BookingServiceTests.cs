@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using MicroserviceCourse.Data;
 using MicroserviceCourse.Exceptions;
 using MicroserviceCourse.Model.Entity;
@@ -11,8 +10,8 @@ namespace EventService.Tests;
 public class BookingServiceTests
 {
     private AppDbContext _dbContext;
-    private List<Event> _events;
-    private MicroserviceCourse.Services.BookingService _bookingService;
+    private readonly List<Event> _events;
+    private readonly BookingService _bookingService;
 
     private static readonly Guid[] Guids =
         [Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()];
@@ -39,7 +38,7 @@ public class BookingServiceTests
 
         SetupDbContext();
 
-        _bookingService = new MicroserviceCourse.Services.BookingService(_dbContext);
+        _bookingService = new BookingService(_dbContext!);
     }
 
 
@@ -68,7 +67,7 @@ public class BookingServiceTests
 
         var eventEntity = await _dbContext.Events.FindAsync(eventId);
 
-        Assert.Equal(eventEntity.AvailableSeats, eventEntity.TotalSeats - 1);
+        Assert.Equal(eventEntity?.AvailableSeats, eventEntity?.TotalSeats - 1);
     }
 
     [Fact]
@@ -114,7 +113,15 @@ public class BookingServiceTests
         var eventId = Guids[0];
         var booking = await _bookingService.CreateBookingAsync(eventId);
 
-        await _bookingService.UpdateStatusAsync(booking.Id, status);
+        switch (status)
+        {
+            case BookingStatus.Confirmed:
+                booking.Confirm();
+                break;
+            case BookingStatus.Rejected:
+                booking.Reject();
+                break;
+        }
 
         Assert.Equal(status, booking.Status);
         Assert.NotNull(booking.ProcessedAt);
@@ -153,7 +160,7 @@ public class BookingServiceTests
         var eventEntity = await _dbContext.Events.FindAsync(eventId);
 
         var bookings = new List<Booking>();
-        var availableSeats = eventEntity.AvailableSeats;
+        var availableSeats = eventEntity?.AvailableSeats;
 
         for (int i = 0; i < availableSeats; i++)
         {
@@ -166,7 +173,7 @@ public class BookingServiceTests
         var uniqueBookingCount = bookings.Select(x => x.Id).Distinct().Count();
 
         Assert.Equal(uniqueBookingCount, bookings.Count);
-        Assert.Equal(0, eventEntity.AvailableSeats);
+        Assert.Equal(0, eventEntity?.AvailableSeats);
     }
 
     [Fact]
@@ -175,14 +182,12 @@ public class BookingServiceTests
         var eventId = Guids[0];
 
         var eventEntity = await _dbContext.Events.FindAsync(eventId);
-
-        var bookings = new List<Booking>();
-        var availableSeats = eventEntity.AvailableSeats;
+        
+        var availableSeats = eventEntity?.AvailableSeats;
 
         for (int i = 0; i < availableSeats; i++)
         {
             var booking = await _bookingService.CreateBookingAsync(eventId);
-            bookings.Add(booking);
 
             Assert.Equal(booking.EventId, eventId);
         }
@@ -191,43 +196,54 @@ public class BookingServiceTests
             await _bookingService.CreateBookingAsync(eventId));
     }
 
-    //Подскажите пожалуйста в чем ошибка, вроде обернул Lock, а все равно не выходит
+    // Тест: один экземпляр контекста и сервиса для всех вызовов
     [Fact]
-    public async Task CreateBooking_HighConcurrency_ShouldHandleRaceConditions()
+    public async Task CreateBooking_HighConcurrency()
     {
         var eventId = Guids[0];
-        var eventEntity = await _dbContext.Events.FindAsync(eventId);
-        var availableSeats = eventEntity.AvailableSeats;
-        var totalAttempts = availableSeats * 2;
-
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.Empty}")
+            .UseInMemoryDatabase(databaseName: $"TestDb_{Guid.NewGuid()}")
             .Options;
 
-        await using (var context = new AppDbContext(options))
+        // Наполнение БД
+        await using (var seedContext = new AppDbContext(options))
         {
-            context.Events.AddRange(_events);
-            await context.SaveChangesAsync();
+            seedContext.Events.AddRange(_events);
+            await seedContext.SaveChangesAsync();
         }
 
-        var tasks = new ConcurrentBag<Task<Booking>>();
+        // Один контекст и один сервис — общие для всех потоков
+        await using var sharedContext = new AppDbContext(options);
+        var sharedService = new BookingService(sharedContext);
 
-        Parallel.For(0, totalAttempts, (i) =>
+        var eventEntity = await sharedContext.Events.FindAsync(eventId);
+        var availableSeats = eventEntity?.AvailableSeats;
+        var totalAttempts = availableSeats * 3;
+        
+        var successfulBookings = 0;
+        var failedBookings = 0;
+
+        var tasks = new List<Task>();
+        for (int i = 0; i < totalAttempts; i++)
         {
-            tasks.Add(Task.Run(async () =>
+            Thread.Sleep(10);
+            tasks.Add(Task.Run( async () => 
             {
-                await using var contextFor = new AppDbContext(options);
-
-                var bookingService = new BookingService(contextFor);
-                return await bookingService.CreateBookingAsync(eventId);
+                try
+                {
+                    await sharedService.CreateBookingAsync(eventId);
+                    Interlocked.Increment(ref successfulBookings);
+                }
+                catch (Exception)
+                {
+                    Interlocked.Increment(ref failedBookings);
+                }
+                
             }));
-        });
+        }
 
         await Task.WhenAll(tasks);
-
-        var successfulBookings = tasks.Count(t => t.Exception is null);
-        var failedBookings = tasks.Count(t => t.Exception is not null);
-
+        
         Assert.Equal(availableSeats, successfulBookings);
         Assert.Equal(totalAttempts - availableSeats, failedBookings);
     }

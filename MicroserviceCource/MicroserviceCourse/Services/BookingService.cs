@@ -9,7 +9,7 @@ namespace MicroserviceCourse.Services;
 
 public class BookingService(AppDbContext context) : IBookingService
 {
-    private readonly object _bookingLock = new();
+    private readonly SemaphoreSlim _bookingLock = new(1,1);
 
     public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct = default)
     {
@@ -17,18 +17,25 @@ public class BookingService(AppDbContext context) : IBookingService
         if (value is null)
             throw new KeyNotFoundException($"Event with Id {eventId} not found");
 
-        lock (_bookingLock)
+        await _bookingLock.WaitAsync(ct);
+
+        Booking booking;
+        try
         {
             var canReserve = value.TryReserveSeats();
             if (!canReserve)
                 throw new NoAvailableSeatsException("No available seats for this event");
+
+            booking = new Booking(eventId);
+            context.Bookings.Add(booking);
+
+            await context.SaveChangesAsync(ct);
         }
-
-        var booking = new Booking(eventId);
-        context.Bookings.Add(booking);
-
-        await context.SaveChangesAsync(ct);
-
+        finally
+        {
+            _bookingLock.Release();
+        }
+        
         return booking;
     }
 

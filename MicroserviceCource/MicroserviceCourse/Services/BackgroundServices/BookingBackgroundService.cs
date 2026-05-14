@@ -63,7 +63,7 @@ public class BookingBackgroundService(
 
         await _processingSemaphore.WaitAsync(stoppingToken);
 
-        Event eventEntity = null;
+        Event? eventEntity = null;
         try
         {
             try
@@ -71,7 +71,7 @@ public class BookingBackgroundService(
                 eventEntity = await eventService.GetById(booking.EventId, stoppingToken);
                 booking = await bookingService.GetBookingByIdAsync(booking.Id, stoppingToken);
             }
-            catch (KeyNotFoundException e)
+            catch (KeyNotFoundException)
             {
                 logger.LogWarning("Событие {EventId} для брони {BookingId} не найдено",
                     booking.EventId, booking.Id);
