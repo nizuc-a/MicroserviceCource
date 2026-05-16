@@ -48,7 +48,9 @@ public class EventService(AppDbContext context) : IEventService
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(dto.StartAt, dto.EndAt);
         
-        Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt);
+        ArgumentOutOfRangeException.ThrowIfLessThan(dto.TotalSeats, 1);
+        
+        Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt, dto.TotalSeats);
         await context.Events.AddAsync(data, ct);
         await context.SaveChangesAsync(ct);
         return data;
@@ -58,9 +60,15 @@ public class EventService(AppDbContext context) : IEventService
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(data.StartAt, data.EndAt);
         
+        ArgumentOutOfRangeException.ThrowIfLessThan(data.TotalSeats, 1);
+        
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.AvailableSeats, data.TotalSeats);
+        ArgumentOutOfRangeException.ThrowIfLessThan(data.AvailableSeats, 0);
+        
+        
         var entity = await GetById(id, ct);
         
-        entity.Update(data.Title, data.Description, data.StartAt, data.EndAt);
+        entity.Update(data.Title, data.Description, data.StartAt, data.EndAt, data.TotalSeats, data.AvailableSeats);
         
         context.Events.Update(entity);
         await context.SaveChangesAsync(ct);
@@ -73,4 +81,6 @@ public class EventService(AppDbContext context) : IEventService
         context.Events.Remove(entity);
         await context.SaveChangesAsync(ct);
     }
+
+    public Task SaveChangesAsync(CancellationToken ct = default) => context.SaveChangesAsync(ct);
 }

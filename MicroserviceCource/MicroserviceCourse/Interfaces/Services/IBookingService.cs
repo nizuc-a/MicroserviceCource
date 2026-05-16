@@ -9,4 +9,11 @@ public interface IBookingService
     Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default);
 
     public Task UpdateStatusAsync(Guid bookingId,BookingStatus status, CancellationToken ct = default);
+    
+    /// <summary>
+    /// Сохранить действия.
+    /// </summary>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task SaveChangesAsync(CancellationToken ct = default);
 }

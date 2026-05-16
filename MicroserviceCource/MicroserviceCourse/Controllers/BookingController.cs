@@ -1,5 +1,7 @@
+using MicroserviceCourse.Exceptions;
 using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Interfaces.TaskQueue;
+using MicroserviceCourse.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MicroserviceCourse.Controllers;
@@ -11,11 +13,19 @@ public class BookingController(IBookingService bookingService, IBookingTaskQueue
     [HttpPost("/events/{eventId:guid}/book")]
     public async Task<IActionResult> AddBooking([FromRoute] Guid eventId, CancellationToken ct)
     {
-        var newBooking = await bookingService.CreateBookingAsync(eventId, ct);
-        
+        Booking newBooking = null;
+        try
+        {
+            newBooking = await bookingService.CreateBookingAsync(eventId, ct);
+        }
+        catch (NoAvailableSeatsException e)
+        {
+            return Conflict($"/events/{eventId}/book");
+        }
+
         bookingTaskQueue.Enqueue(newBooking);
 
-        return Accepted($"/bookings/{newBooking.Id}",new
+        return Accepted($"/bookings/{newBooking.Id}", new
         {
             bookingId = newBooking.Id,
             eventId = newBooking.EventId,

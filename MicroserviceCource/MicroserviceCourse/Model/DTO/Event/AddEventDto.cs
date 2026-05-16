@@ -14,4 +14,7 @@ public class AddEventDto
     
     [Required]
     public DateTime EndAt { get; set; }
+    
+    [Required]
+    public int  TotalSeats { get; set; }
 }

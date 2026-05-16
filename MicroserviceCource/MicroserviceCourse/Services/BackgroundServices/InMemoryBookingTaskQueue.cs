@@ -17,4 +17,12 @@ public class InMemoryBookingTaskQueue : IBookingTaskQueue
     {
         return _queue.TryDequeue(out booking);
     }
+
+    public IEnumerable<Booking> GetPending()
+    {
+        while (TryDequeue(out var booking))
+        {
+            yield return booking;
+        }
+    }
 }

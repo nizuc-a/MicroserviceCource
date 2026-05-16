@@ -6,4 +6,5 @@ public interface IBookingTaskQueue
 {
     void Enqueue(Booking booking);
     bool TryDequeue(out Booking booking);
+    IEnumerable<Booking> GetPending();
 }
