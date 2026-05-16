@@ -16,7 +16,9 @@ public class EventService(AppDbContext context) : IEventService
         var result = new PaginatedResult();
         result.Page = page;
         
-        var query = context.Events.AsQueryable();
+        var query = context.Events
+            .Include(x=> x.Bookings)
+            .AsQueryable();
         
         if(!string.IsNullOrWhiteSpace(title))
             query = query.Where(e => e.Title.ToLower().Contains(title.ToLower()));

@@ -41,7 +41,9 @@ public class BookingService(AppDbContext context) : IBookingService
 
     public async Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default)
     {
-        var booking = await context.Bookings.FirstOrDefaultAsync(x => x.Id == bookingId, ct);
+        var booking = await context.Bookings
+            .Include(x=> x.Event)
+            .FirstOrDefaultAsync(x => x.Id == bookingId, ct);
         if (booking == null)
             throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
 
