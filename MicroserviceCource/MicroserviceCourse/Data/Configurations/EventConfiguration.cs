@@ -18,21 +18,28 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.HasIndex(e => e.EndAt);
 
         builder.Property(e => e.Title)
+            .HasColumnName("title")
             .HasMaxLength(256)
             .IsRequired();
 
-        builder.Property(e => e.Description);
+        builder.Property(e => e.Description)
+            .HasColumnName("description")
+            .HasMaxLength(2000);
 
         builder.Property(e => e.StartAt)
+            .HasColumnName("start_at")
             .IsRequired();
 
         builder.Property(e => e.EndAt)
+            .HasColumnName("end_at")
             .IsRequired();
 
         builder.Property(e => e.TotalSeats)
+            .HasColumnName("total_seats")
             .IsRequired();
 
         builder.Property(e => e.AvailableSeats)
+            .HasColumnName("available_seats")
             .IsRequired();
         
         builder.HasMany(b=> b.Bookings)
