@@ -55,7 +55,7 @@ public class BookingService(AppDbContext context) : IBookingService
             throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
 
         booking.Status = status;
-        booking.ProcessedAt = DateTime.Now;
+        booking.ProcessedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync(ct);
     }

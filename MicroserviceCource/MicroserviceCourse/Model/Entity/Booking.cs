@@ -15,19 +15,19 @@ public class Booking
     
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     public DateTime? ProcessedAt { get; set; }
 
     public void Confirm()
     {
         Status = BookingStatus.Confirmed;
-        ProcessedAt = DateTime.Now;
+        ProcessedAt = DateTime.UtcNow;
     }
     
     public void Reject()
     {
         Status = BookingStatus.Rejected;
-        ProcessedAt = DateTime.Now;
+        ProcessedAt = DateTime.UtcNow;
     }
 }

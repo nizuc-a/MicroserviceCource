@@ -43,7 +43,7 @@ public class BookingBackgroundService(
     private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
     {
         logger.LogInformation(
-            "Начата обработка брони {TaskId}, статус: {ReportType}",
+            "Начата обработка брони {TaskId}, статус: {Status}",
             booking.Id, booking.Status);
 
         if (booking.Status != BookingStatus.Pending)
@@ -64,30 +64,37 @@ public class BookingBackgroundService(
         await _processingSemaphore.WaitAsync(stoppingToken);
 
         Event? eventEntity = null;
+        Booking? bookingDb = null;  
         try
         {
             try
             {
+                bookingDb = await bookingService.GetBookingByIdAsync(booking.Id, stoppingToken);
                 eventEntity = await eventService.GetById(booking.EventId, stoppingToken);
-                booking = await bookingService.GetBookingByIdAsync(booking.Id, stoppingToken);
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException) when (bookingDb is null)
+            {
+                logger.LogWarning("Бронь {BookingId} не найдена", booking.Id);
+                
+                return;
+            }
+            catch (KeyNotFoundException) when (eventEntity is null)
             {
                 logger.LogWarning("Событие {EventId} для брони {BookingId} не найдено",
                     booking.EventId, booking.Id);
 
-                booking.Reject();
+                bookingDb.Reject();
                 eventEntity?.ReleaseSeats();
 
                 return;
             }
-
-            booking.Confirm();
+            
+            bookingDb.Confirm();
             logger.LogInformation("Бронь {BookingId} успешно подтверждена", booking.Id);
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            booking.Reject();
+            bookingDb.Reject();
             eventEntity?.ReleaseSeats();
 
             throw;
@@ -96,7 +103,7 @@ public class BookingBackgroundService(
         {
             logger.LogError(e, "Необработанная ошибка при обработке брони {BookingId}", booking.Id);
 
-            booking.Reject();
+            bookingDb.Reject();
             eventEntity?.ReleaseSeats();
 
             throw;
