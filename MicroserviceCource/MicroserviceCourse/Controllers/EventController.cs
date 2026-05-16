@@ -1,5 +1,6 @@
 ﻿using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Model.DTO.Event;
+using MicroserviceCourse.Model.DTO.Pagination;
 using MicroserviceCourse.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace MicroserviceCourse.Controllers;
 public class EventsController(IEventService eventService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<PaginatedResult>> GetAll(
+    public async Task<ActionResult<PaginatedResult<Event>>> GetAll(
         [FromQuery] string? title = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,

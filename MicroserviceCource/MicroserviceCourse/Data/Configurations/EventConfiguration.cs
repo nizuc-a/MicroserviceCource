@@ -9,7 +9,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
     public void Configure(EntityTypeBuilder<Event> builder)
     {
         builder.ToTable("events",
-            t => { t.HasCheckConstraint("CK_events_StartBeforeEnd", "\"StartAt\" < \"EndAt\""); });
+            t => { t.HasCheckConstraint("CK_events_StartBeforeEnd", "\"start_at\" < \"end_at\""); });
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedNever();

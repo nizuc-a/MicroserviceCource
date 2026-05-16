@@ -9,7 +9,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.ToTable("bookings",
-            t => { t.HasCheckConstraint("CK_bookings_CreatedBeforeProcessed", "\"CreatedAt\" < \"ProcessedAt\""); });
+            t => { t.HasCheckConstraint("CK_bookings_CreatedBeforeProcessed", "\"created_at\" < \"processed_at\""); });
 
         builder.HasKey(b => b.Id);
         

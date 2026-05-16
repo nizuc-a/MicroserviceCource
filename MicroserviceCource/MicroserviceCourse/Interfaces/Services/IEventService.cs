@@ -1,4 +1,5 @@
 ﻿using MicroserviceCourse.Model.DTO.Event;
+using MicroserviceCourse.Model.DTO.Pagination;
 using MicroserviceCourse.Model.Entity;
 
 namespace MicroserviceCourse.Interfaces.Services;
@@ -9,7 +10,7 @@ public interface IEventService
     /// Получить все события.
     /// </summary>
     /// <returns>Список событий.</returns>
-    Task<PaginatedResult> GetAll(string? title = null, DateTime? from= null, DateTime? to= null, int page = 1, int pageSize = 10, CancellationToken ct = default);
+    Task<PaginatedResult<Event>> GetAll(string? title = null, DateTime? from= null, DateTime? to= null, int page = 1, int pageSize = 10, CancellationToken ct = default);
 
     /// <summary>
     /// Получить событие по идентификатору.
