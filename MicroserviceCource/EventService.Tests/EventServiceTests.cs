@@ -1,5 +1,6 @@
 using MicroserviceCourse.Data;
 using MicroserviceCourse.Model.DTO.Event;
+using MicroserviceCourse.Model.DTO.Pagination;
 using MicroserviceCourse.Model.Entity;
 using Microsoft.EntityFrameworkCore;
 
@@ -65,20 +66,19 @@ public class EventServiceTests
     [Fact]
     public async Task GetAll_Correct()
     {
-        var expectedResult = new PaginatedResult()
+        var expectedResult = new PaginatedResult<Event>()
         {
             Page = 1,
-            AllElementCount = 3,
-            CurrentPageElementCount = 3,
-            Events = _events.ToArray()
+            TotalCount = 3,
+            Items = _events.ToArray(),
+            PageSize = 10
         };
 
         var result = await _eventService.GetAll();
 
         Assert.Equal(expectedResult.Page, result.Page);
-        Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
-        Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
-        Assert.Equal(expectedResult.Events.Length, result.Events.Length);
+        Assert.Equal(expectedResult.TotalCount, result.TotalCount);
+        Assert.Equal(expectedResult.Items.Length, result.Items.Length);
     }
 
     [Fact]
@@ -86,20 +86,19 @@ public class EventServiceTests
     {
         var title = "война";
 
-        var expectedResult = new PaginatedResult()
+        var expectedResult = new PaginatedResult<Event>()
         {
             Page = 1,
-            AllElementCount = 1,
-            CurrentPageElementCount = 1,
-            Events = [_events[2]]
+            TotalCount = 1,
+            Items = [_events[2]],
+            PageSize = 10
         };
 
         var result = await _eventService.GetAll(title);
 
         Assert.Equal(expectedResult.Page, result.Page);
-        Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
-        Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
-        Assert.Equal(expectedResult.Events.Length, result.Events.Length);
+        Assert.Equal(expectedResult.TotalCount, result.TotalCount);
+        Assert.Equal(expectedResult.Items.Length, result.Items.Length);
     }
 
     [Theory]
@@ -113,7 +112,7 @@ public class EventServiceTests
 
         var result = await _eventService.GetAll(from: fromDate, to: toDate);
 
-        Assert.Equal(expectedCount, result.Events.Length);
+        Assert.Equal(expectedCount, result.Items.Length);
     }
 
     [Fact]
@@ -122,20 +121,19 @@ public class EventServiceTests
         var title = "война";
         var dateFrom = DateTime.Parse("22.04.2010");
 
-        var expectedResult = new PaginatedResult()
+        var expectedResult = new PaginatedResult<Event>()
         {
             Page = 1,
-            AllElementCount = 1,
-            CurrentPageElementCount = 1,
-            Events = [_events[2]]
+            TotalCount = 1,
+            Items = [_events[2]],
+            PageSize = 10
         };
 
         var result = await _eventService.GetAll(title, dateFrom);
 
         Assert.Equal(expectedResult.Page, result.Page);
-        Assert.Equal(expectedResult.AllElementCount, result.AllElementCount);
-        Assert.Equal(expectedResult.CurrentPageElementCount, result.CurrentPageElementCount);
-        Assert.Equal(expectedResult.Events.Length, result.Events.Length);
+        Assert.Equal(expectedResult.TotalCount, result.TotalCount);
+        Assert.Equal(expectedResult.Items.Length, result.Items.Length);
     }
 
     [Theory]
@@ -285,7 +283,7 @@ public class EventServiceTests
         await _eventService.DeleteEventById(id);
         var eventsAfterDelete = await _eventService.GetAll();
 
-        Assert.Equal(2, eventsAfterDelete.AllElementCount);
+        Assert.Equal(2, eventsAfterDelete.TotalCount);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 ﻿using MicroserviceCourse.Data;
 using MicroserviceCourse.Interfaces.Services;
 using MicroserviceCourse.Model.DTO.Event;
+using MicroserviceCourse.Model.DTO.Pagination;
 using MicroserviceCourse.Model.Entity;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,15 +9,14 @@ namespace MicroserviceCourse.Services;
 
 public class EventService(AppDbContext context) : IEventService
 {
-    public async Task<PaginatedResult> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10, CancellationToken ct = default)
+    public async Task<PaginatedResult<Event>> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
-
-        var result = new PaginatedResult();
-        result.Page = page;
         
-        var query = context.Events.AsQueryable();
+        var query = context.Events
+            .Include(x=> x.Bookings)
+            .AsQueryable();
         
         if(!string.IsNullOrWhiteSpace(title))
             query = query.Where(e => e.Title.ToLower().Contains(title.ToLower()));
@@ -27,14 +27,19 @@ public class EventService(AppDbContext context) : IEventService
         if(to.HasValue)
             query = query.Where(e => e.EndAt <= to.Value);
         
-        result.AllElementCount = await query.CountAsync(ct);
+        var allElementCount = await query.CountAsync(ct);
         
         query = query.Skip((page - 1) * pageSize).Take(pageSize);
         
-        result.Events = await query.ToArrayAsync(ct);
-        result.CurrentPageElementCount = result.Events.Length;
+        var events = await query.ToArrayAsync(ct);
         
-        return result;
+        return new PaginatedResult<Event>()
+        {
+            Items = events,
+            TotalCount =  allElementCount,
+            Page = page,
+            PageSize =  pageSize,
+        };
     }
 
     public async Task<Event> GetById(Guid id, CancellationToken ct = default)

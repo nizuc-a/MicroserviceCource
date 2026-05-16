@@ -9,9 +9,11 @@ public class Booking
         EventId = eventId;
     }
     
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } =  Guid.NewGuid();
     
     public Guid EventId { get; set; }
+
+    public Event Event { get; set; }
     
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 

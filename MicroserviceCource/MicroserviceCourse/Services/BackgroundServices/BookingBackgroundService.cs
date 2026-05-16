@@ -53,10 +53,6 @@ public class BookingBackgroundService(
             return;
         }
 
-        var delay = TimeSpan.FromSeconds(2);
-
-        await Task.Delay(delay, stoppingToken);
-
         using var scope = scopeFactory.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();

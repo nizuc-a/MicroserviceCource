@@ -12,13 +12,15 @@ public class Event
         AvailableSeats = totalSeats;
     }
 
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } =  Guid.NewGuid();
     public string Title { get; set; }
     public string Description { get; set; }
     public DateTime StartAt { get; set; }
     public DateTime EndAt { get; set; }
     public int TotalSeats { get; set; }
     public int AvailableSeats { get; set; }
+    
+    public List<Booking> Bookings { get; set; }
 
     public void Update(string title, string description, DateTime startAt, DateTime endAt, int totalSeats,
         int availableSeats)
