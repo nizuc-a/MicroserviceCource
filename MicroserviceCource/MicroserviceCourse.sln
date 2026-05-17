@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroserviceCourse", "MicroserviceCourse\MicroserviceCourse.csproj", "{19E4A3C2-48C5-48A0-8DF5-151BCBA065C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService.Api", "EventService.Api\EventService.Api.csproj", "{19E4A3C2-48C5-48A0-8DF5-151BCBA065C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService.Tests", "EventService.Tests\EventService.Tests.csproj", "{23516BB8-9A1F-4678-AA68-F5859A056B7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService.UnitTests", "EventService.UnitTests\EventService.UnitTests.csproj", "{23516BB8-9A1F-4678-AA68-F5859A056B7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
