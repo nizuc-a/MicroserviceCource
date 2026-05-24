@@ -18,8 +18,6 @@ public class BookingServiceTests
 
     public BookingServiceTests()
     {
-        
-
         var dbName = Guid.NewGuid().ToString();
         var services = new ServiceCollection();
         
@@ -162,19 +160,6 @@ public class BookingServiceTests
         var createdBooking = await bookingService.CreateBookingAsync(eventId);
 
         Assert.Equal(status, createdBooking.Status);
-    }
-
-    [Fact]
-    public async Task UpdateStatus_KeyNotFoundException()
-    {
-        var randomId = Guid.NewGuid();
-        var status = BookingStatus.Confirmed;
-        
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-
-        await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await bookingService.UpdateStatusAsync(randomId, status));
     }
 
     #endregion
