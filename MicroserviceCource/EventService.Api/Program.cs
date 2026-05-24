@@ -1,7 +1,9 @@
 using EventService.Api.Data;
+using EventService.Api.Interfaces.Repository;
 using EventService.Api.Interfaces.Services;
 using EventService.Api.Interfaces.TaskQueue;
 using EventService.Api.Middleware;
+using EventService.Api.Repository;
 using EventService.Api.Services;
 using EventService.Api.Services.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +18,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .LogTo(Console.WriteLine, LogLevel.Information)
         .EnableDetailedErrors());
 
+builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService.Api.Services.EventService>();
+
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddSingleton<IBookingTaskQueue, InMemoryBookingTaskQueue>();
@@ -38,7 +43,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 if (app.Environment.IsDevelopment())
