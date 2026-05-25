@@ -1,54 +1,28 @@
-using EventService.Api.Data;
 using EventService.Api.Model.Entity;
 using EventService.Api.Repository;
 using EventService.Api.Services;
+using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace EventService.IntegrationTests;
 
 [Collection("Database")]
-public class BookRepositoryTests : IAsyncLifetime
+public class BookRepositoryTests
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine")
-        .Build();
+    private readonly PostgreSqlContainerFixture _container;
 
-    public async Task InitializeAsync()
+    public BookRepositoryTests(PostgreSqlContainerFixture container)
     {
-        await _postgres.StartAsync();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _postgres.DisposeAsync();
-    }
-
-    private AppDbContext CreateContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(_postgres.GetConnectionString())
-            .Options;
-
-        var context = new AppDbContext(options);
-        context.Database.EnsureCreated();
-        
-        return context;
-    }
-
-    private async Task ResetDatabaseAsync()
-    {
-        await using var context = CreateContext();
-        await context.Database.ExecuteSqlRawAsync(
-            "TRUNCATE TABLE bookings, events RESTART IDENTITY CASCADE");
+        _container = container;
     }
 
     [Fact]
     public async Task CreateBooking()
     {
-        await ResetDatabaseAsync();
+        await _container.ResetDatabaseAsync();
         
-        await using var context = CreateContext();
+        await using var context = _container.CreateContext();
         var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
         context.Events.Add(eventEntity);
         await context.SaveChangesAsync();
@@ -58,7 +32,7 @@ public class BookRepositoryTests : IAsyncLifetime
         
         await service.CreateBookingAsync(eventEntity.Id);
         
-        await using var verifyContext  = CreateContext();
+        await using var verifyContext  = _container.CreateContext();
         var booking = await verifyContext.Bookings.FirstAsync();
         
         Assert.NotNull(booking);
@@ -68,9 +42,9 @@ public class BookRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task CreateBooking_DbUpdateException_IdenticalIds()
     {
-        await ResetDatabaseAsync();
+        await _container.ResetDatabaseAsync();
         
-        await using var context = CreateContext();
+        await using var context = _container.CreateContext();
         var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
         context.Events.Add(eventEntity);
         await context.SaveChangesAsync();
@@ -79,7 +53,7 @@ public class BookRepositoryTests : IAsyncLifetime
         
         var booking = await bookingRepository.CreateBookingAsync(eventEntity.Id);
         
-        await using var verifyContext  = CreateContext();
+        await using var verifyContext  = _container.CreateContext();
         
         verifyContext.Bookings.Add(booking);
         
@@ -89,9 +63,9 @@ public class BookRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task GetBooking()
     {
-        await ResetDatabaseAsync();
+        await _container.ResetDatabaseAsync();
         
-        await using var context = CreateContext();
+        await using var context = _container.CreateContext();
         var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
         context.Events.Add(eventEntity);
         await context.SaveChangesAsync();
@@ -100,7 +74,7 @@ public class BookRepositoryTests : IAsyncLifetime
         
         var booking = await bookingRepository.CreateBookingAsync(eventEntity.Id);
         
-        await using var verifyContext  = CreateContext();
+        await using var verifyContext  = _container.CreateContext();
         bookingRepository = new BookingRepository(verifyContext);
         
         var verifyBooking = await bookingRepository.GetBookingByIdAsync(booking.Id);
@@ -112,9 +86,9 @@ public class BookRepositoryTests : IAsyncLifetime
     [Fact]
     public async Task CreateBooking_WithInvalidEventId_ThrowsForeignKeyViolation()
     {
-        await ResetDatabaseAsync();
+        await _container.ResetDatabaseAsync();
         
-        await using var context = CreateContext();
+        await using var context = _container.CreateContext();
         var nonExistentEventId = Guid.NewGuid();
         var booking = new Booking(nonExistentEventId);
         context.Bookings.Add(booking);

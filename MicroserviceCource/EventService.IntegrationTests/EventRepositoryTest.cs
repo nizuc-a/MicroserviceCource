@@ -2,45 +2,25 @@ using EventService.Api.Data;
 using EventService.Api.Model.Entity;
 using EventService.Api.Repository;
 using EventService.Api.Services;
+using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace EventService.IntegrationTests;
 
 [Collection("Database")]
-public class EventRepositoryTest : IAsyncLifetime
+public class EventRepositoryTest 
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+    private readonly PostgreSqlContainerFixture _container;
 
-    public async Task InitializeAsync()
+    public EventRepositoryTest(PostgreSqlContainerFixture container)
     {
-        await _postgres.StartAsync();
+        _container = container;
     }
 
-    public async Task DisposeAsync()
-    {
-        await _postgres.DisposeAsync();
-    }
-
-    private AppDbContext CreateContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(_postgres.GetConnectionString())
-            .Options;
-
-        var context = new AppDbContext(options);
-        context.Database.EnsureCreated();
-
-        return context;
-    }
-
-    private async Task ResetDatabaseAsync()
-    {
-        await using var context = CreateContext();
-        await context.Database.ExecuteSqlRawAsync(
-            "TRUNCATE TABLE bookings, events RESTART IDENTITY CASCADE");
-    }
+    private async Task ResetDatabaseAsync() => await _container.ResetDatabaseAsync();
+    
+    private AppDbContext CreateContext() => _container.CreateContext();
 
     [Fact]
     public async Task AddEvent_WithValidData_SavesSuccessfully()
