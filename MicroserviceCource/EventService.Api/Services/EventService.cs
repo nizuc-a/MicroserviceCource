@@ -26,7 +26,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
     public async Task<Event> GetById(Guid id, CancellationToken ct = default)
     {
-        var entity = await eventRepository.GetById(id, ct);
+        var entity = await eventRepository.GetByIdAsync(id, ct);
         
         return entity ?? throw new KeyNotFoundException($"Event with Id {id} not found");
     }
@@ -39,7 +39,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
         
         Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt, dto.TotalSeats);
         
-        await eventRepository.AddEvent(data, ct);
+        await eventRepository.AddEventAsync(data, ct);
         
         return data;
     }
@@ -63,6 +63,6 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
     public async Task DeleteEventById(Guid id, CancellationToken ct = default)
     {
-        await eventRepository.DeleteEventById(id, ct);
+        await eventRepository.DeleteEventByIdAsync(id, ct);
     }
 }

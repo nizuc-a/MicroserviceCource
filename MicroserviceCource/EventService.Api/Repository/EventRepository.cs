@@ -32,12 +32,12 @@ public class EventRepository(AppDbContext context) : IEventRepository
         return new (events, allElementCount);
     }
 
-    public async Task<Event?> GetById(Guid id, CancellationToken ct = default)
+    public async Task<Event?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await context.Events.FirstOrDefaultAsync(e => e.Id == id, ct);
     }
 
-    public async Task AddEvent(Event data, CancellationToken ct = default)
+    public async Task AddEventAsync(Event data, CancellationToken ct = default)
     {
         await context.Events.AddAsync(data, ct);
         await context.SaveChangesAsync(ct);
@@ -49,9 +49,9 @@ public class EventRepository(AppDbContext context) : IEventRepository
         await context.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteEventById(Guid id, CancellationToken ct = default)
+    public async Task DeleteEventByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await GetById(id, ct);
+        var entity = await GetByIdAsync(id, ct);
         if(entity == null)
             return;
         

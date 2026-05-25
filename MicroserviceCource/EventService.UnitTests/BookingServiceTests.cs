@@ -1,8 +1,10 @@
 using EventService.Api.Data;
 using EventService.Api.Exceptions;
+using EventService.Api.Interfaces.Repository;
 using EventService.Api.Interfaces.Services;
 using EventService.Api.Model.Entity;
 using EventService.Api.Model.Enum;
+using EventService.Api.Repository;
 using EventService.Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +25,8 @@ public class BookingServiceTests
         
         services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase(dbName));
-        
+
+        services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IBookingService,BookingService>();
 
         _serviceProvider = services.BuildServiceProvider();

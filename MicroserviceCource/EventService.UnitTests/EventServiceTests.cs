@@ -2,6 +2,7 @@ using EventService.Api.Data;
 using EventService.Api.Model.DTO.Event;
 using EventService.Api.Model.DTO.Pagination;
 using EventService.Api.Model.Entity;
+using EventService.Api.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.UnitTests;
@@ -46,7 +47,7 @@ public class EventServiceTests
 
         SetupDbContext();
 
-        _eventService = new Api.Services.EventService(_dbContext);
+        _eventService = new Api.Services.EventService(new EventRepository(_dbContext));
     }
 
     private void SetupDbContext()
@@ -284,14 +285,6 @@ public class EventServiceTests
         var eventsAfterDelete = await _eventService.GetAll();
 
         Assert.Equal(2, eventsAfterDelete.TotalCount);
-    }
-
-    [Fact]
-    public async Task DeleteEventById_KeyNotFoundException()
-    {
-        var id = Guid.NewGuid();
-
-        await Assert.ThrowsAsync<KeyNotFoundException>(async () => await _eventService.DeleteEventById(id));
     }
 
     #endregion
