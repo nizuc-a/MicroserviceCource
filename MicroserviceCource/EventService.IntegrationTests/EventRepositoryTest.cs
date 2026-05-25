@@ -336,16 +336,16 @@ public class EventRepositoryTest
         var event2Id = event2.Id;
 
         var bookingRepository = new BookingRepository(context);
-        var service = new BookingService(bookingRepository);
         
-        await service.CreateBookingAsync(event1Id);
-        await service.CreateBookingAsync(event1Id);
+        await bookingRepository.CreateBookingAsync(event1Id);
+        await bookingRepository.CreateBookingAsync(event1Id);
 
-        await service.CreateBookingAsync(event2Id);
-        await service.CreateBookingAsync(event2Id);
+        await bookingRepository.CreateBookingAsync(event2Id);
+        await bookingRepository.CreateBookingAsync(event2Id);
 
         
         await using var verifyContext = CreateContext();
+        var verifyEventRepository = new EventRepository(verifyContext);
 
         var totalBookings = await verifyContext.Bookings.CountAsync();
         Assert.Equal(4, totalBookings);
@@ -353,8 +353,8 @@ public class EventRepositoryTest
         await using var deleteContext = CreateContext();
 
         var eventToDelete = await deleteContext.Events.FirstAsync(e => e.Id == event1Id);
-        deleteContext.Events.Remove(eventToDelete);
-        await deleteContext.SaveChangesAsync();
+        
+        await verifyEventRepository.DeleteEventByIdAsync(eventToDelete.Id);
         
         await using var finalContext = CreateContext();
 

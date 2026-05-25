@@ -1,4 +1,5 @@
 using EventService.Api.Data;
+using EventService.Api.Interfaces.Repository;
 using EventService.Api.Interfaces.TaskQueue;
 using EventService.Api.Model.Enum;
 using Microsoft.EntityFrameworkCore;
@@ -50,12 +51,15 @@ public class BookingBackgroundService(
 
             using var scope = scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+            var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+            
 
-            var booking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId, stoppingToken);
+            var booking = await bookingRepository.GetBookingByIdAsync(bookingId, stoppingToken);
             if (booking == null || booking.Status != BookingStatus.Pending)
                 return;
 
-            var @event = await context.Events.FirstOrDefaultAsync(e => e.Id == booking.EventId, stoppingToken);
+            var @event = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
             if (@event == null)
             {
                 booking.Reject();
@@ -84,13 +88,15 @@ public class BookingBackgroundService(
             {
                 using var scope = scopeFactory.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+                var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
 
-                var booking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId, stoppingToken);
+                var booking = await bookingRepository.GetBookingByIdAsync(bookingId, stoppingToken);
                 if (booking != null)
                 {
                     booking.Reject();
 
-                    var @event = await context.Events.FirstOrDefaultAsync(e => e.Id == booking.EventId, stoppingToken);
+                    var @event = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
                     if (@event != null)
                         @event.ReleaseSeats();
 

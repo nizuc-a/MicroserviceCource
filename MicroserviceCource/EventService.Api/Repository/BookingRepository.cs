@@ -26,14 +26,12 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
         return booking;
     }
 
-    public async Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default)
+    public async Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default)
     {
         var booking = await context.Bookings
             .Include(x => x.Event)
             .FirstOrDefaultAsync(x => x.Id == bookingId, ct);
-        if (booking == null)
-            throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
-
+        
         return booking;
     }
 }

@@ -24,6 +24,11 @@ public class BookingService(IBookingRepository bookingRepository) : IBookingServ
 
     public async Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default)
     {
-        return await bookingRepository.GetBookingByIdAsync(bookingId, ct);
+        var booking = await bookingRepository.GetBookingByIdAsync(bookingId, ct);
+        
+        if (booking == null)
+            throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
+        
+        return booking;
     }
 }
