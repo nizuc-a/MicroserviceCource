@@ -65,4 +65,6 @@ public class EventService(IEventRepository eventRepository) : IEventService
     {
         await eventRepository.DeleteEventByIdAsync(id, ct);
     }
+    
+    public Task SaveChangesAsync(CancellationToken ct = default) =>  eventRepository.SaveChangesAsync(ct);
 }

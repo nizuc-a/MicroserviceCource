@@ -31,4 +31,6 @@ public class BookingService(IBookingRepository bookingRepository) : IBookingServ
         
         return booking;
     }
+
+    public Task SaveChangesAsync(CancellationToken ct = default) =>  bookingRepository.SaveChangesAsync(ct);
 }

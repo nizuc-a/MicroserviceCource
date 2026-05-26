@@ -47,7 +47,7 @@ public class EventServiceTests
 
         SetupDbContext();
 
-        _eventService = new Api.Services.EventService(new EventRepository(_dbContext));
+        _eventService = new Api.Services.EventService(new EventRepository(_dbContext!));
     }
 
     private void SetupDbContext()

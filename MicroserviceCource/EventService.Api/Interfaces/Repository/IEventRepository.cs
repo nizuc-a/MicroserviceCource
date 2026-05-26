@@ -14,4 +14,6 @@ public interface IEventRepository
     Task UpdateEvent(Event data, CancellationToken ct = default);
 
     Task DeleteEventByIdAsync(Guid id, CancellationToken ct = default);
+
+    public Task SaveChangesAsync(CancellationToken ct = default);
 }

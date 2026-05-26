@@ -58,4 +58,6 @@ public class EventRepository(AppDbContext context) : IEventRepository
         context.Events.Remove(entity);
         await context.SaveChangesAsync(ct);
     }
+    
+    public Task SaveChangesAsync(CancellationToken ct = default) =>  context.SaveChangesAsync(ct);
 }

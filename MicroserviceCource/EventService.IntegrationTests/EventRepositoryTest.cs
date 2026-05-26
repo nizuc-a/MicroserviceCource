@@ -1,7 +1,6 @@
 using EventService.Api.Data;
 using EventService.Api.Model.Entity;
 using EventService.Api.Repository;
-using EventService.Api.Services;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -276,8 +275,6 @@ public class EventRepositoryTest
             var eventEntity = new Event($"Событие {i}", "", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
             await repository.AddEventAsync(eventEntity);
         }
-
-        var (events1, totalCount1) = await repository.GetAll(page: 1, pageSize: 100);
 
         // Act
         var (events, totalCount) = await repository.GetAll(page: 2, pageSize: 5);

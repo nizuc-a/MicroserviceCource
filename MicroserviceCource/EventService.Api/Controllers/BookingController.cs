@@ -13,12 +13,12 @@ public class BookingController(IBookingService bookingService, IBookingTaskQueue
     [HttpPost("/events/{eventId:guid}/book")]
     public async Task<IActionResult> AddBooking([FromRoute] Guid eventId, CancellationToken ct)
     {
-        Booking newBooking = null;
+        Booking newBooking;
         try
         {
             newBooking = await bookingService.CreateBookingAsync(eventId, ct);
         }
-        catch (NoAvailableSeatsException e)
+        catch (NoAvailableSeatsException)
         {
             return Conflict($"/events/{eventId}/book");
         }

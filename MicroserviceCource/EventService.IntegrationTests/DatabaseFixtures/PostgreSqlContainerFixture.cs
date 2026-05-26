@@ -1,5 +1,6 @@
 using EventService.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -7,7 +8,11 @@ namespace EventService.IntegrationTests.DatabaseFixtures;
 
 public class PostgreSqlContainerFixture : IAsyncLifetime
 {
-    public PostgreSqlContainer Container {get; private set; } = new PostgreSqlBuilder("postgres:16-alpine").Build();
+    public PostgreSqlContainer Container {get; private set; } = new PostgreSqlBuilder("postgres:16-alpine")
+        .WithDatabase("eventapi")
+        .WithUsername("postgres")
+        .WithPassword("postgres")
+        .Build();
     
     public async Task InitializeAsync()
     {
@@ -26,15 +31,17 @@ public class PostgreSqlContainerFixture : IAsyncLifetime
             .Options;
 
         var context = new AppDbContext(options);
-        context.Database.Migrate();
 
         return context;
     }
 
     public async Task ResetDatabaseAsync()
     {
+        NpgsqlConnection.ClearAllPools();
+        
         await using var context = CreateContext();
-        await context.Database.ExecuteSqlRawAsync(
-            "TRUNCATE TABLE bookings, events RESTART IDENTITY CASCADE");
+
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
     }
 }

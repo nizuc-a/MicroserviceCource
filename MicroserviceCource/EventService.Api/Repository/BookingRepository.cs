@@ -34,4 +34,6 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
         
         return booking;
     }
+
+    public Task SaveChangesAsync(CancellationToken ct = default) =>  context.SaveChangesAsync(ct);
 }
