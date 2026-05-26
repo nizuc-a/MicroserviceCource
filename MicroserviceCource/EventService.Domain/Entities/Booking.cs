@@ -1,6 +1,6 @@
-using EventService.Api.Model.Enum;
+using EventService.Domain.Enums;
 
-namespace EventService.Api.Model.Entity;
+namespace EventService.Domain.Entities;
 
 public class Booking
 {

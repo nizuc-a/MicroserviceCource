@@ -1,7 +1,7 @@
 using EventService.Api.Data;
-using EventService.Api.Exceptions;
 using EventService.Api.Interfaces.Repository;
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
+using EventService.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.Api.Repository;

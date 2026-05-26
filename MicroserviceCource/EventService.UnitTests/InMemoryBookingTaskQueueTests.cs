@@ -1,5 +1,5 @@
-using EventService.Api.Model.Entity;
 using EventService.Api.Services.BackgroundServices;
+using EventService.Domain.Entities;
 
 namespace EventService.UnitTests;
 

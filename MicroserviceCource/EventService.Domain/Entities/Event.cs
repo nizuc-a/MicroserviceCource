@@ -1,4 +1,4 @@
-﻿namespace EventService.Api.Model.Entity;
+﻿namespace EventService.Domain.Entities;
 
 public class Event
 {

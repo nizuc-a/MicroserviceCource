@@ -1,8 +1,8 @@
 using EventService.Api.Data;
 using EventService.Api.Model.DTO.Event;
 using EventService.Api.Model.DTO.Pagination;
-using EventService.Api.Model.Entity;
 using EventService.Api.Repository;
+using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.UnitTests;

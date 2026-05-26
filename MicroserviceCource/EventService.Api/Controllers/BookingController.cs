@@ -1,7 +1,7 @@
-using EventService.Api.Exceptions;
 using EventService.Api.Interfaces.Services;
 using EventService.Api.Interfaces.TaskQueue;
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
+using EventService.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Api.Controllers;

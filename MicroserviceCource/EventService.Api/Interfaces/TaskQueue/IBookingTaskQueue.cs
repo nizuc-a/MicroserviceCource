@@ -1,4 +1,4 @@
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
 
 namespace EventService.Api.Interfaces.TaskQueue;
 

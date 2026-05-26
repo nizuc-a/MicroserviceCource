@@ -1,6 +1,6 @@
 using EventService.Api.Interfaces.Repository;
 using EventService.Api.Interfaces.TaskQueue;
-using EventService.Api.Model.Enum;
+using EventService.Domain.Enums;
 
 namespace EventService.Api.Services.BackgroundServices;
 

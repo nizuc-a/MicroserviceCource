@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using EventService.Api.Interfaces.TaskQueue;
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
 
 namespace EventService.Api.Services.BackgroundServices;
 

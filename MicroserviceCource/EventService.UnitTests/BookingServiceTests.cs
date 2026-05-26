@@ -1,11 +1,11 @@
 using EventService.Api.Data;
-using EventService.Api.Exceptions;
 using EventService.Api.Interfaces.Repository;
 using EventService.Api.Interfaces.Services;
-using EventService.Api.Model.Entity;
-using EventService.Api.Model.Enum;
 using EventService.Api.Repository;
 using EventService.Api.Services;
+using EventService.Domain.Entities;
+using EventService.Domain.Enums;
+using EventService.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,5 +1,4 @@
-using EventService.Api.Model.Entity;
-using EventService.Api.Model.Enum;
+using EventService.Domain.Entities;
 
 namespace EventService.Api.Interfaces.Services;
 

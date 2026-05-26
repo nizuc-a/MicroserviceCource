@@ -1,4 +1,4 @@
-﻿namespace EventService.Api.Exceptions;
+﻿namespace EventService.Domain.Exceptions;
 
 public class NoAvailableSeatsException : Exception
 {

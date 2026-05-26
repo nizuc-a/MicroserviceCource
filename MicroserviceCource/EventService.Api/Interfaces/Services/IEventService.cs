@@ -1,6 +1,6 @@
 ﻿using EventService.Api.Model.DTO.Event;
 using EventService.Api.Model.DTO.Pagination;
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
 
 namespace EventService.Api.Interfaces.Services;
 

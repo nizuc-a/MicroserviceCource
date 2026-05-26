@@ -1,4 +1,4 @@
-using EventService.Api.Exceptions;
+using EventService.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Api.Middleware;

@@ -1,6 +1,6 @@
 using EventService.Api.Data;
 using EventService.Api.Interfaces.Repository;
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.Api.Repository;

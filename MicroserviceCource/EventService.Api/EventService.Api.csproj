@@ -21,4 +21,8 @@
       <Folder Include="Migrations\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\EventService.Domain\EventService.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
