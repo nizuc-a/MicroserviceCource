@@ -1,5 +1,5 @@
-using EventService.Api.Interfaces.Services;
-using EventService.Api.Interfaces.TaskQueue;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.Abstractions.TaskQueue;
 using EventService.Domain.Entities;
 using EventService.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;

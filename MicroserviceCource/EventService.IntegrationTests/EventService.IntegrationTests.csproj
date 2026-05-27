@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EventService.Api\EventService.Api.csproj" />
+      <ProjectReference Include="..\EventService.Infrastructure\EventService.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

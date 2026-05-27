@@ -1,6 +1,6 @@
-﻿using EventService.Api.Interfaces.Services;
-using EventService.Api.Model.DTO.Event;
-using EventService.Api.Model.DTO.Pagination;
+﻿using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs.Event;
+using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,5 +1,5 @@
-using EventService.Api.Services.BackgroundServices;
 using EventService.Domain.Entities;
+using EventService.Infrastructure.TaskQueue;
 
 namespace EventService.UnitTests;
 
