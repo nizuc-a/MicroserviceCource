@@ -14,9 +14,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        ?? throw new InvalidOperationException("Connection string 'Default' not found."); 
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString)
-        .LogTo(Console.WriteLine, LogLevel.Information)
-        .EnableDetailedErrors());
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService.Api.Services.EventService>();
