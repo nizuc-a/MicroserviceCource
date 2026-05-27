@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService.Application", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService.Infrastructure", "EventService.Infrastructure\EventService.Infrastructure.csproj", "{ABA3A190-C0F4-4291-8C8A-FCB36B51F7B2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D5501E0E-7B88-454E-A90C-58BC0E7D074D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{ABA3A190-C0F4-4291-8C8A-FCB36B51F7B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABA3A190-C0F4-4291-8C8A-FCB36B51F7B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABA3A190-C0F4-4291-8C8A-FCB36B51F7B2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{52E88E15-674B-4074-A811-2587CDE5276F} = {D5501E0E-7B88-454E-A90C-58BC0E7D074D}
+		{23516BB8-9A1F-4678-AA68-F5859A056B7E} = {D5501E0E-7B88-454E-A90C-58BC0E7D074D}
 	EndGlobalSection
 EndGlobal

@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EventService.Api.Migrations
+namespace EventService.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260517111409_InitialCreate")]
@@ -25,7 +25,7 @@ namespace EventService.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EventService.Api.Model.Entity.Booking", b =>
+            modelBuilder.Entity("EventService.Domain.Entities.Booking", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -58,7 +58,7 @@ namespace EventService.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EventService.Api.Model.Entity.Event", b =>
+            modelBuilder.Entity("EventService.Domain.Entities.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -103,9 +103,9 @@ namespace EventService.Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EventService.Api.Model.Entity.Booking", b =>
+            modelBuilder.Entity("EventService.Domain.Entities.Booking", b =>
                 {
-                    b.HasOne("EventService.Api.Model.Entity.Event", "Event")
+                    b.HasOne("EventService.Domain.Entities.Event", "Event")
                         .WithMany("Bookings")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -114,7 +114,7 @@ namespace EventService.Api.Migrations
                     b.Navigation("Event");
                 });
 
-            modelBuilder.Entity("EventService.Api.Model.Entity.Event", b =>
+            modelBuilder.Entity("EventService.Domain.Entities.Event", b =>
                 {
                     b.Navigation("Bookings");
                 });
