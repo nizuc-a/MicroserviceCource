@@ -8,7 +8,7 @@ public static class ApplicationDependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddScoped<IEventService, Application.Services.EventService>();
+        services.AddScoped<IEventService, Services.EventService>();
         services.AddScoped<IBookingService, BookingService>();
         
         return services;
