@@ -26,6 +26,7 @@ public class BookingServiceTests
         services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase(dbName));
 
+        services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IBookingService,BookingService>();
 

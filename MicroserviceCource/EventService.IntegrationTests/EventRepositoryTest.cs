@@ -334,11 +334,13 @@ public class EventRepositoryTest
 
         var bookingRepository = new BookingRepository(context);
         
-        await bookingRepository.CreateBookingAsync(event1Id);
-        await bookingRepository.CreateBookingAsync(event1Id);
+        
+        
+        await bookingRepository.CreateBookingAsync(new Booking(event1Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event1Id));
 
-        await bookingRepository.CreateBookingAsync(event2Id);
-        await bookingRepository.CreateBookingAsync(event2Id);
+        await bookingRepository.CreateBookingAsync(new Booking(event2Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event2Id));
 
         
         await using var verifyContext = CreateContext();

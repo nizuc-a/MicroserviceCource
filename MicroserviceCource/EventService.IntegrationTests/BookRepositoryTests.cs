@@ -28,7 +28,8 @@ public class BookRepositoryTests
         await context.SaveChangesAsync();
         
         var bookingRepository = new BookingRepository(context);
-        var service = new BookingService(bookingRepository);
+        var eventRepository = new EventRepository(context);
+        var service = new BookingService(bookingRepository, eventRepository);
         
         await service.CreateBookingAsync(eventEntity.Id);
         
@@ -50,8 +51,9 @@ public class BookRepositoryTests
         await context.SaveChangesAsync();
         
         var bookingRepository = new BookingRepository(context);
+        var booking = new Booking(eventEntity.Id);
         
-        var booking = await bookingRepository.CreateBookingAsync(eventEntity.Id);
+        await bookingRepository.CreateBookingAsync(booking);
         
         await using var verifyContext  = _container.CreateContext();
         
@@ -71,8 +73,9 @@ public class BookRepositoryTests
         await context.SaveChangesAsync();
         
         var bookingRepository = new BookingRepository(context);
+        var booking = new Booking(eventEntity.Id);
         
-        var booking = await bookingRepository.CreateBookingAsync(eventEntity.Id);
+        await bookingRepository.CreateBookingAsync(booking);
         
         await using var verifyContext  = _container.CreateContext();
         bookingRepository = new BookingRepository(verifyContext);

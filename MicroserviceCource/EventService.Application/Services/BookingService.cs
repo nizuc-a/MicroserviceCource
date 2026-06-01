@@ -1,10 +1,11 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Domain.Entities;
+using EventService.Domain.Exceptions;
 
 namespace EventService.Application.Services;
 
-public class BookingService(IBookingRepository bookingRepository) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository) : IBookingService
 {
     private static readonly SemaphoreSlim BookingLock = new(1, 1);
 
@@ -14,7 +15,18 @@ public class BookingService(IBookingRepository bookingRepository) : IBookingServ
         
         try
         {
-            return  await bookingRepository.CreateBookingAsync(eventId, ct);
+            var eventEntity = await eventRepository.GetByIdAsync(eventId, ct);
+            if (eventEntity == null)
+                throw new KeyNotFoundException($"Event with Id {eventId} not found");
+            
+            if (!eventEntity.TryReserveSeats())
+                throw new NoAvailableSeatsException("No available seats for this event");
+            
+            var booking = new Booking(eventId);
+            
+            await bookingRepository.CreateBookingAsync(booking, ct);
+
+            return booking;
         }
         finally
         {
