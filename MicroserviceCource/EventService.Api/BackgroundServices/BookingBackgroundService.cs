@@ -11,8 +11,6 @@ public class BookingBackgroundService(
 {
     private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan ProcessingDelay = TimeSpan.FromSeconds(2);
-    
-    private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
