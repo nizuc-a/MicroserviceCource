@@ -1,6 +1,6 @@
-using EventService.Api.Data;
-using EventService.Api.Model.Entity;
-using EventService.Api.Repository;
+using EventService.Domain.Entities;
+using EventService.Infrastructure;
+using EventService.Infrastructure.Repository;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -334,11 +334,13 @@ public class EventRepositoryTest
 
         var bookingRepository = new BookingRepository(context);
         
-        await bookingRepository.CreateBookingAsync(event1Id);
-        await bookingRepository.CreateBookingAsync(event1Id);
+        
+        
+        await bookingRepository.CreateBookingAsync(new Booking(event1Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event1Id));
 
-        await bookingRepository.CreateBookingAsync(event2Id);
-        await bookingRepository.CreateBookingAsync(event2Id);
+        await bookingRepository.CreateBookingAsync(new Booking(event2Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event2Id));
 
         
         await using var verifyContext = CreateContext();

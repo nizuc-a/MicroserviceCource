@@ -1,11 +1,7 @@
-using EventService.Api.Data;
-using EventService.Api.Interfaces.Repository;
-using EventService.Api.Interfaces.Services;
-using EventService.Api.Interfaces.TaskQueue;
+using EventService.Api.BackgroundServices;
 using EventService.Api.Middleware;
-using EventService.Api.Repository;
-using EventService.Api.Services;
-using EventService.Api.Services.BackgroundServices;
+using EventService.Application;
+using EventService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,18 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'Default' not found."); 
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString)
-        .LogTo(Console.WriteLine, LogLevel.Information)
-        .EnableDetailedErrors());
-
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IEventService, EventService.Api.Services.EventService>();
-
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-
-builder.Services.AddSingleton<IBookingTaskQueue, InMemoryBookingTaskQueue>();
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(connectionString);
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>

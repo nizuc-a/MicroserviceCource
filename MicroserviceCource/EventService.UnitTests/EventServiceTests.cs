@@ -1,8 +1,8 @@
-using EventService.Api.Data;
-using EventService.Api.Model.DTO.Event;
-using EventService.Api.Model.DTO.Pagination;
-using EventService.Api.Model.Entity;
-using EventService.Api.Repository;
+using EventService.Application.DTOs.Event;
+using EventService.Application.DTOs.Pagination;
+using EventService.Domain.Entities;
+using EventService.Infrastructure;
+using EventService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.UnitTests;
@@ -11,7 +11,7 @@ public class EventServiceTests
 {
     private AppDbContext _dbContext;
     private List<Event> _events;
-    private Api.Services.EventService _eventService;
+    private Application.Services.EventService _eventService;
 
     private static (string, string)[] dates =
     [
@@ -47,7 +47,7 @@ public class EventServiceTests
 
         SetupDbContext();
 
-        _eventService = new Api.Services.EventService(new EventRepository(_dbContext!));
+        _eventService = new Application.Services.EventService(new EventRepository(_dbContext!));
     }
 
     private void SetupDbContext()

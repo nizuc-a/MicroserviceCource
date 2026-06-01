@@ -1,7 +1,6 @@
-using EventService.Api.Exceptions;
-using EventService.Api.Interfaces.Services;
-using EventService.Api.Interfaces.TaskQueue;
-using EventService.Api.Model.Entity;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.Abstractions.TaskQueue;
+using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Api.Controllers;
@@ -13,15 +12,7 @@ public class BookingController(IBookingService bookingService, IBookingTaskQueue
     [HttpPost("/events/{eventId:guid}/book")]
     public async Task<IActionResult> AddBooking([FromRoute] Guid eventId, CancellationToken ct)
     {
-        Booking newBooking;
-        try
-        {
-            newBooking = await bookingService.CreateBookingAsync(eventId, ct);
-        }
-        catch (NoAvailableSeatsException)
-        {
-            return Conflict($"/events/{eventId}/book");
-        }
+        Booking newBooking = await bookingService.CreateBookingAsync(eventId, ct);
 
         bookingTaskQueue.Enqueue(newBooking);
 

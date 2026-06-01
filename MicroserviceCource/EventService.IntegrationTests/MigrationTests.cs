@@ -1,4 +1,4 @@
-using EventService.Api.Model.Entity;
+using EventService.Domain.Entities;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
