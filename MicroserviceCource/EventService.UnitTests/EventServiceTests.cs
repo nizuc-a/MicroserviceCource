@@ -11,7 +11,7 @@ public class EventServiceTests
 {
     private AppDbContext _dbContext;
     private List<Event> _events;
-    private Infrastructure.Services.EventService _eventService;
+    private Application.Services.EventService _eventService;
 
     private static (string, string)[] dates =
     [
@@ -47,7 +47,7 @@ public class EventServiceTests
 
         SetupDbContext();
 
-        _eventService = new Infrastructure.Services.EventService(new EventRepository(_dbContext!));
+        _eventService = new Application.Services.EventService(new EventRepository(_dbContext!));
     }
 
     private void SetupDbContext()

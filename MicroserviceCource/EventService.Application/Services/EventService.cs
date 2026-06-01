@@ -4,7 +4,7 @@ using EventService.Application.DTOs.Event;
 using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
 
-namespace EventService.Infrastructure.Services;
+namespace EventService.Application.Services;
 
 public class EventService(IEventRepository eventRepository) : IEventService
 {

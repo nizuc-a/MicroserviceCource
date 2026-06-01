@@ -1,6 +1,6 @@
+using EventService.Application.Services;
 using EventService.Domain.Entities;
 using EventService.Infrastructure.Repository;
-using EventService.Infrastructure.Services;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

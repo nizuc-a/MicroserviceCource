@@ -1,11 +1,11 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
+using EventService.Application.Services;
 using EventService.Domain.Entities;
 using EventService.Domain.Enums;
 using EventService.Domain.Exceptions;
 using EventService.Infrastructure;
 using EventService.Infrastructure.Repository;
-using EventService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

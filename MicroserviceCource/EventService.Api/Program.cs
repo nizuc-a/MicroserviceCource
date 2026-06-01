@@ -1,5 +1,6 @@
 using EventService.Api.BackgroundServices;
 using EventService.Api.Middleware;
+using EventService.Application;
 using EventService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 

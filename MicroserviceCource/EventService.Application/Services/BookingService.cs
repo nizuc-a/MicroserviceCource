@@ -2,7 +2,7 @@ using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Domain.Entities;
 
-namespace EventService.Infrastructure.Services;
+namespace EventService.Application.Services;
 
 public class BookingService(IBookingRepository bookingRepository) : IBookingService
 {
