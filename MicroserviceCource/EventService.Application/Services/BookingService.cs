@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Domain.Entities;
@@ -7,11 +8,13 @@ namespace EventService.Application.Services;
 
 public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository) : IBookingService
 {
-    private static readonly SemaphoreSlim BookingLock = new(1, 1);
+    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
 
     public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct = default)
     {
-        await BookingLock.WaitAsync(ct);
+        var semaphore = _locks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
+        
+        await semaphore.WaitAsync(ct);
         
         try
         {
@@ -30,7 +33,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
         }
         finally
         {
-            BookingLock.Release();
+            semaphore.Release();
         }
     }
 
