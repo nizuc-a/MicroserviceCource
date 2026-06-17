@@ -24,7 +24,10 @@ public static class InfrastructureDependencyInjection
 
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        
         services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IPasswordHasher, Sha256PasswordHasher>();
         
         services.AddSingleton<IBookingTaskQueue, InMemoryBookingTaskQueue>();
 

@@ -1,0 +1,8 @@
+namespace EventService.Application.Abstractions.Services;
+
+public interface IAuthService
+{
+    Task<string> LoginAsync(string login, string password, CancellationToken ct = default);
+    
+    Task<string> RegisterAsync(string login, string password, CancellationToken ct = default);
+}

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text;
 using EventService.Application.Abstractions.Auth;
 using EventService.Domain.Entities;
@@ -19,7 +18,6 @@ public class JwtTokenGenerator(IOptions<JwtSettings> options) : ITokenGenerator
         var claims = new Dictionary<string, object>
         {
             [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
-            [JwtRegisteredClaimNames.Nickname] = user.Login,
             ["role"] = user.Role,
             [JwtRegisteredClaimNames.Jti] = Guid.NewGuid().ToString(),
         };
