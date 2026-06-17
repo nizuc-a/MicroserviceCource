@@ -5,6 +5,7 @@ using EventService.Domain.Entities;
 using EventService.Domain.Enums;
 using EventService.Domain.Exceptions;
 using EventService.Infrastructure;
+using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

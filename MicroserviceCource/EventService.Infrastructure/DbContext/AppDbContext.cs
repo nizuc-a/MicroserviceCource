@@ -1,9 +1,9 @@
 ﻿using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventService.Infrastructure;
+namespace EventService.Infrastructure.DbContext;
 
-public class AppDbContext : DbContext
+public class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -11,6 +11,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Event> Events { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    
+    public DbSet<User>  Users { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

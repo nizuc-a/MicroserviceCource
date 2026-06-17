@@ -11,4 +11,6 @@ public class User
     public string Login { get; set; }
     
     public string PasswordHash { get; set; }
+
+    public List<Booking> Bookings { get; set; }
 }

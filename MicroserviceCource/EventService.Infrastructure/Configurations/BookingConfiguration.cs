@@ -22,6 +22,12 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsRequired();
         
         builder.HasIndex(b => b.EventId);
+        
+        builder.Property(b => b.UserId)
+            .HasColumnName("user_id")
+            .IsRequired();
+        
+        builder.HasIndex(b => b.UserId);
 
         builder.Property(b => b.Status)
             .HasColumnName("status")
@@ -38,6 +44,11 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasOne(b => b.Event)
             .WithMany(b => b.Bookings)
             .HasForeignKey(b => b.EventId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasOne(b => b.User)
+            .WithMany(b => b.Bookings)
+            .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

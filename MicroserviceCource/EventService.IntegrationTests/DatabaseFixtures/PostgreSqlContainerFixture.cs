@@ -1,4 +1,4 @@
-using EventService.Infrastructure;
+using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Testcontainers.PostgreSql;

@@ -1,5 +1,6 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.TaskQueue;
+using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using EventService.Infrastructure.TaskQueue;
 using Microsoft.EntityFrameworkCore;

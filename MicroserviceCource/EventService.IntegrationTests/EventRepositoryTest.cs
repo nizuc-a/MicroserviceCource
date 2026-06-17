@@ -1,5 +1,6 @@
 using EventService.Domain.Entities;
 using EventService.Infrastructure;
+using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;

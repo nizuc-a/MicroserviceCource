@@ -1,5 +1,6 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Domain.Entities;
+using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.Infrastructure.Repository;
