@@ -57,9 +57,12 @@ public class ExceptionHandlerMiddleware
     private static string MapTypeLink(Exception ex)
         => ex switch
         {
-            KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.5",
-            ArgumentOutOfRangeException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
-            NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.10",
+            KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
+            ArgumentOutOfRangeException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
+            NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
+            EventExpiredException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
+            ActiveBookingLimitExceededException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
+            PermissionDeniedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-403-forbidden",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
 
@@ -69,6 +72,9 @@ public class ExceptionHandlerMiddleware
             KeyNotFoundException=> StatusCodes.Status404NotFound,
             ArgumentOutOfRangeException => StatusCodes.Status400BadRequest,
             NoAvailableSeatsException => StatusCodes.Status409Conflict,
+            EventExpiredException => StatusCodes.Status400BadRequest,
+            ActiveBookingLimitExceededException => StatusCodes.Status409Conflict,
+            PermissionDeniedException => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status500InternalServerError
         };
 }
