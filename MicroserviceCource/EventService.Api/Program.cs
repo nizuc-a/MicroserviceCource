@@ -20,6 +20,9 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
 
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection(JwtSettings.SectionName));
+
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
     {
