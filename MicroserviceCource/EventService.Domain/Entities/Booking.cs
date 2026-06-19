@@ -4,9 +4,10 @@ namespace EventService.Domain.Entities;
 
 public class Booking
 {
-    public Booking(Guid eventId)
+    public Booking(Guid eventId,  Guid userId)
     {
         EventId = eventId;
+        UserId = userId;
     }
     
     public Guid Id { get; set; } =  Guid.NewGuid();
@@ -34,6 +35,12 @@ public class Booking
     public void Reject()
     {
         Status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.UtcNow;
+    }
+
+    public void Cancel()
+    {
+        Status = BookingStatus.Cancelled;
         ProcessedAt = DateTime.UtcNow;
     }
 }

@@ -12,5 +12,12 @@ public class User
     
     public string PasswordHash { get; set; }
 
-    public List<Booking> Bookings { get; set; }
+    public List<Booking> Bookings { get; set; } = new();
+
+    public User(string login, string passwordHash, UserRole role = UserRole.User)
+    {
+        Login = login;
+        PasswordHash = passwordHash;
+        Role = role;
+    }
 }
