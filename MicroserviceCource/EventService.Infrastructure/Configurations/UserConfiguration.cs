@@ -19,7 +19,8 @@ public class UserConfiguration: IEntityTypeConfiguration<User>
             .HasColumnName("login")
             .IsRequired();
 
-        builder.HasIndex(b => b.Login);
+        builder.HasIndex(b => b.Login)
+            .IsUnique();
         
         builder.Property(b => b.PasswordHash)
             .HasColumnName("password_hash")
