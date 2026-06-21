@@ -1,7 +1,7 @@
 # EventService API
 
 Сервис для управления событиями и бронированиями.  
-Реализован на **ASP.NET Core 8** с использованием **PostgreSQL**, **Entity Framework Core**, **чистой архитектуры** и **конкурентной обработки**.
+Реализован на **ASP.NET Core 10** с использованием **PostgreSQL**, **Entity Framework Core**, **чистой архитектуры** и **конкурентной обработки**.
 
 ---
 
@@ -221,7 +221,6 @@ dotnet test
   "ExpirationMinutes": 60
 }
 ```
-
 ---
 
 #### GET `/events`

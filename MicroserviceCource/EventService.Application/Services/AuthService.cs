@@ -29,7 +29,7 @@ public class AuthService(IUserRepository userRepository, IPasswordHasher passwor
     {
         var userExist = await userRepository.GetUserByLoginAsync(login, ct);
         if (userExist is not null)
-            throw new AuthenticationFailedException("Login is already taken.");
+            throw new ArgumentException("Login is already taken.");
 
         var passwordHash = passwordHasher.HashPassword(password);
 

@@ -106,14 +106,14 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_LoginIsBusy_AuthenticationFailedException()
+    public async Task RegisterAsync_LoginIsBusy_ArgumentException()
     {
         var existingUser = new User(Login, PasswordHash);
         _userRepositoryMock
             .Setup(x => x.GetUserByLoginAsync(Login, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingUser);
 
-        var exception = await Assert.ThrowsAsync<AuthenticationFailedException>(async () =>
+        var exception = await Assert.ThrowsAsync<ArgumentException>(async () =>
             await _authService.RegisterAsync(Login, Password, UserRole.User));
 
         Assert.Equal("Login is already taken.", exception.Message);

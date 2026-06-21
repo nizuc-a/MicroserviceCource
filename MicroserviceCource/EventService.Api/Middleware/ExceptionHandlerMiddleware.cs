@@ -58,7 +58,7 @@ public class ExceptionHandlerMiddleware
         => ex switch
         {
             KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
-            ArgumentOutOfRangeException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
+            ArgumentException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
             NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
             EventExpiredException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
             ActiveBookingLimitExceededException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
@@ -73,7 +73,7 @@ public class ExceptionHandlerMiddleware
         => ex switch
         {
             KeyNotFoundException=> StatusCodes.Status404NotFound,
-            ArgumentOutOfRangeException => StatusCodes.Status400BadRequest,
+            ArgumentException => StatusCodes.Status400BadRequest,
             NoAvailableSeatsException => StatusCodes.Status409Conflict,
             EventExpiredException => StatusCodes.Status400BadRequest,
             ActiveBookingLimitExceededException => StatusCodes.Status409Conflict,
