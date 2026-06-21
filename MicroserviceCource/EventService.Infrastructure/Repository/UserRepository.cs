@@ -1,5 +1,6 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Domain.Entities;
+using EventService.Domain.Enums;
 using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,9 +18,9 @@ public class UserRepository(AppDbContext context) : IUserRepository
         return await context.Users.FirstOrDefaultAsync(x => x.Login == login, cancellationToken: ct);
     }
 
-    public async Task<User> RegisterAsync(string login, string passwordHash, CancellationToken ct = default)
+    public async Task<User> RegisterAsync(string login, string passwordHash, UserRole role, CancellationToken ct = default)
     {
-        var user = new User(login, passwordHash);
+        var user = new User(login, passwordHash, role);
         await context.Users.AddAsync(user, ct);
         await context.SaveChangesAsync(ct);
         return user;

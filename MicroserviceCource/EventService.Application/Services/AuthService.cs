@@ -2,6 +2,7 @@ using System.Security.Authentication;
 using EventService.Application.Abstractions.Auth;
 using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
+using EventService.Domain.Enums;
 using EventService.Domain.Exceptions;
 
 namespace EventService.Application.Services;
@@ -23,7 +24,7 @@ public class AuthService(IUserRepository userRepository, IPasswordHasher passwor
         return tokenGenerator.GenerateToken(user);
     }
 
-    public async Task<string> RegisterAsync(string login, string password, CancellationToken ct = default)
+    public async Task<string> RegisterAsync(string login, string password, UserRole role, CancellationToken ct = default)
     {
         var userExist = await userRepository.GetUserByLoginAsync(login, ct);
         if(userExist is not null)
@@ -31,7 +32,7 @@ public class AuthService(IUserRepository userRepository, IPasswordHasher passwor
         
         var passwordHash = passwordHasher.HashPassword(password);
         
-        var user = await userRepository.RegisterAsync(login, passwordHash, ct);
+        var user = await userRepository.RegisterAsync(login, passwordHash, role, ct);
         
         return tokenGenerator.GenerateToken(user);
     }
