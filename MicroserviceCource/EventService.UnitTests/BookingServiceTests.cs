@@ -129,6 +129,40 @@ public class BookingServiceTests
             await bookingService.CreateBookingAsync(eventId, randomUserId));
     }
 
+    [Fact]
+    public async Task CreateBooking_ActiveBookingLimitExceededException()
+    {
+        var userId = UserGuids[0];
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        for (var i = 0; i < 10; i++)
+            await bookingService.CreateBookingAsync(EventGuids[i % EventGuids.Length], userId);
+
+        await Assert.ThrowsAsync<ActiveBookingLimitExceededException>(async () =>
+            await bookingService.CreateBookingAsync(EventGuids[0], userId));
+    }
+
+    [Fact]
+    public async Task CreateBooking_AfterCancelledBooking_AllowsNewBooking()
+    {
+        var userId = UserGuids[0];
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        for (var i = 0; i < 10; i++)
+            await bookingService.CreateBookingAsync(EventGuids[i % EventGuids.Length], userId);
+
+        var bookings = await bookingService.GetBookingsByUserId(userId);
+        await bookingService.CancelBookingAsync(bookings[0].Id);
+
+        var newBooking = await bookingService.CreateBookingAsync(EventGuids[0], userId);
+
+        Assert.Equal(userId, newBooking.UserId);
+    }
+
     #endregion
 
     #region Get Booking By Id
@@ -368,7 +402,7 @@ public class BookingServiceTests
         }
 
         await Assert.ThrowsAsync<NoAvailableSeatsException>(async () =>
-            await bookingService.CreateBookingAsync(eventId, userId));
+            await bookingService.CreateBookingAsync(eventId, UserGuids[1]));
     }
     
     [Fact]
@@ -398,6 +432,10 @@ public class BookingServiceTests
                     Interlocked.Increment(ref successfulBookings);
                 }
                 catch (NoAvailableSeatsException)
+                {
+                    Interlocked.Increment(ref failedBookings);
+                }
+                catch (ActiveBookingLimitExceededException)
                 {
                     Interlocked.Increment(ref failedBookings);
                 }

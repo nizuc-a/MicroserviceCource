@@ -12,14 +12,17 @@ public class BookingService(
     IEventRepository eventRepository,
     IUserRepository userRepository) : IBookingService
 {
+    private const int MaxActiveBookingsPerUser = 10;
+
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _eventLocks = new();
+    private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _userLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _bookingLocks = new();
 
     public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken ct = default)
     {
-        var semaphore = _eventLocks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
+        var userSemaphore = _userLocks.GetOrAdd(userId, _ => new SemaphoreSlim(1, 1));
 
-        await semaphore.WaitAsync(ct);
+        await userSemaphore.WaitAsync(ct);
 
         try
         {
@@ -27,25 +30,41 @@ public class BookingService(
             if (user == null)
                 throw new UserNotFoundException($"User with Id {userId} not found");
 
-            var eventEntity = await eventRepository.GetByIdAsync(eventId, ct);
-            if (eventEntity == null)
-                throw new KeyNotFoundException($"Event with Id {eventId} not found");
+            var activeBookingsCount = await bookingRepository.CountActiveBookingsByUserIdAsync(userId, ct);
+            if (activeBookingsCount >= MaxActiveBookingsPerUser)
+                throw new ActiveBookingLimitExceededException(
+                    $"User has reached the maximum limit of {MaxActiveBookingsPerUser} active bookings");
 
-            if (eventEntity.StartAt >= DateTime.UtcNow)
-                throw new EventExpiredException("Event is already expired");
+            var eventSemaphore = _eventLocks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
 
-            if (!eventEntity.TryReserveSeats())
-                throw new NoAvailableSeatsException("No available seats for this event");
+            await eventSemaphore.WaitAsync(ct);
 
-            var booking = new Booking(eventId, userId);
+            try
+            {
+                var eventEntity = await eventRepository.GetByIdAsync(eventId, ct);
+                if (eventEntity == null)
+                    throw new KeyNotFoundException($"Event with Id {eventId} not found");
 
-            await bookingRepository.CreateBookingAsync(booking, ct);
+                if (eventEntity.StartAt >= DateTime.UtcNow)
+                    throw new EventExpiredException("Event is already expired");
 
-            return booking;
+                if (!eventEntity.TryReserveSeats())
+                    throw new NoAvailableSeatsException("No available seats for this event");
+
+                var booking = new Booking(eventId, userId);
+
+                await bookingRepository.CreateBookingAsync(booking, ct);
+
+                return booking;
+            }
+            finally
+            {
+                eventSemaphore.Release();
+            }
         }
         finally
         {
-            semaphore.Release();
+            userSemaphore.Release();
         }
     }
 

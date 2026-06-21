@@ -1,5 +1,6 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Domain.Entities;
+using EventService.Domain.Enums;
 using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,15 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             .Where(x => x.UserId == userId);
         
         return await bookings.ToListAsync(ct);
+    }
+
+    public async Task<int> CountActiveBookingsByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        return await context.Bookings
+            .CountAsync(
+                x => x.UserId == userId &&
+                     (x.Status == BookingStatus.Pending || x.Status == BookingStatus.Confirmed),
+                ct);
     }
 
     public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
