@@ -10,7 +10,7 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
 {
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
 
-    public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct = default)
+    public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken ct = default)
     {
         var semaphore = _locks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
         
@@ -22,10 +22,13 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
             if (eventEntity == null)
                 throw new KeyNotFoundException($"Event with Id {eventId} not found");
             
+            if(eventEntity.StartAt >= DateTime.UtcNow)
+                throw new EventExpiredException("Event is already expired");
+            
             if (!eventEntity.TryReserveSeats())
                 throw new NoAvailableSeatsException("No available seats for this event");
             
-            var booking = new Booking(eventId);
+            var booking = new Booking(eventId, userId);
             
             await bookingRepository.CreateBookingAsync(booking, ct);
 
@@ -45,6 +48,16 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
             throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
         
         return booking;
+    }
+
+    public async Task<List<Booking>> GetBookingsByUserId(Guid userId, CancellationToken ct = default)
+    {
+        return await bookingRepository.GetBookingsByUserId(userId, ct);
+    }
+
+    public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
+    {
+        await bookingRepository.CancelBookingAsync(bookingId, ct);
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) =>  bookingRepository.SaveChangesAsync(ct);

@@ -17,9 +17,30 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
     {
         var booking = await context.Bookings
             .Include(x => x.Event)
+            .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == bookingId, ct);
         
         return booking;
+    }
+
+    public async Task<List<Booking>> GetBookingsByUserId(Guid userId, CancellationToken ct = default)
+    {
+        var bookings = context.Bookings
+            .Include(x => x.Event)
+            .Include(x => x.User)
+            .Where(x => x.UserId == userId);
+        
+        return await bookings.ToListAsync(ct);
+    }
+
+    public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
+    {
+        var booking = context.Bookings.FirstOrDefault(x => x.Id == bookingId);
+        if (booking == null)
+            return;
+        
+        booking.Cancel();
+        await SaveChangesAsync(ct);
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) =>  context.SaveChangesAsync(ct);
