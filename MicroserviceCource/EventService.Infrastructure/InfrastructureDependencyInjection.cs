@@ -56,6 +56,8 @@ public static class InfrastructureDependencyInjection
 
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
+
+                    RoleClaimType = "role",
                 };
             });
         

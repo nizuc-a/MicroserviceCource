@@ -10,7 +10,7 @@ public interface IBookingService
     
     Task<List<Booking>> GetBookingsByUserId(Guid userId, CancellationToken ct = default);
     
-    Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default);
+    Task CancelBookingAsync(Guid bookingId, Guid userId, bool isAdmin, CancellationToken ct = default);
 
     public Task SaveChangesAsync(CancellationToken ct = default);
 }

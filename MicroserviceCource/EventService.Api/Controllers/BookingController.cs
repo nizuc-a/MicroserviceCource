@@ -2,6 +2,7 @@ using System.Security.Claims;
 using EventService.Application.Abstractions.Services;
 using EventService.Application.Abstractions.TaskQueue;
 using EventService.Domain.Entities;
+using EventService.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,10 +54,14 @@ public class BookingController(IBookingService bookingService, IBookingTaskQueue
     }
 
     [HttpDelete("{bookingId:guid}")]
-    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> CancelBooking([FromRoute] Guid bookingId, CancellationToken ct)
     {
-        await bookingService.CancelBookingAsync(bookingId, ct);
+        var userIdValue = User.FindFirstValue("userId");
+        if (!Guid.TryParse(userIdValue, out var userId))
+            return Unauthorized();
+
+        var isAdmin = User.IsInRole(nameof(UserRole.Admin));
+        await bookingService.CancelBookingAsync(bookingId, userId, isAdmin, ct);
         return NoContent();
     }
 }

@@ -45,8 +45,8 @@ public class BookingService(
                 if (eventEntity == null)
                     throw new KeyNotFoundException($"Event with Id {eventId} not found");
 
-                if (eventEntity.StartAt >= DateTime.UtcNow)
-                    throw new EventExpiredException("Event is already expired");
+                if (eventEntity.StartAt <= DateTime.UtcNow)
+                    throw new EventExpiredException("Event has already started");
 
                 if (!eventEntity.TryReserveSeats())
                     throw new NoAvailableSeatsException("No available seats for this event");
@@ -83,7 +83,7 @@ public class BookingService(
         return await bookingRepository.GetBookingsByUserId(userId, ct);
     }
 
-    public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
+    public async Task CancelBookingAsync(Guid bookingId, Guid userId, bool isAdmin, CancellationToken ct = default)
     {
         var semaphore = _bookingLocks.GetOrAdd(bookingId, _ => new SemaphoreSlim(1, 1));
         await semaphore.WaitAsync(ct);
@@ -97,6 +97,10 @@ public class BookingService(
 
             if (booking.Status == BookingStatus.Cancelled)
                 throw new BookingAlreadyCancelledException($"Booking with Id {bookingId} is already cancelled");
+
+            var isOwner = booking.UserId == userId;
+            if (!isAdmin && !isOwner)
+                throw new PermissionDeniedException($"User {userId} is not allowed to cancel booking {bookingId}");
 
             await bookingRepository.CancelBookingAsync(bookingId, ct);
         }

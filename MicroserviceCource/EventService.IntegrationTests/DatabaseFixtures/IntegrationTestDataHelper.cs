@@ -25,8 +25,8 @@ public static class IntegrationTestDataHelper
         var eventEntity = new Event(
             title,
             "Описание",
-            DateTime.UtcNow.AddDays(-1),
             DateTime.UtcNow.AddDays(1),
+            DateTime.UtcNow.AddDays(2),
             totalSeats);
 
         context.Events.Add(eventEntity);

@@ -8,19 +8,19 @@ namespace EventService.Api.Controllers;
 [Route("auth")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    [HttpPost("/register")]
+    [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto, CancellationToken ct)
     {
-        var token = await authService.RegisterAsync(dto.Login, dto.Password, dto.Role, ct);
-        
-        return Ok(token);
+        await authService.RegisterAsync(dto.Login, dto.Password, dto.Role, ct);
+
+        return NoContent();
     }
 
-    [HttpPost("/login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto, CancellationToken ct)
     {
         var token = await authService.LoginAsync(dto.Login, dto.Password, ct);
-        
+
         return Ok(token);
     }
 }

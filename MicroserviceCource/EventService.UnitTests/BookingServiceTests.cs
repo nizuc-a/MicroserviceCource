@@ -39,17 +39,17 @@ public class BookingServiceTests
         
         List<Event> events =
         [
-            new Event("крещение Руси", "988 год", DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1), 10)
+            new Event("крещение Руси", "988 год", DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(2), 10)
             {
                 Id = EventGuids[0],
             },
 
-            new Event("битва на реке Калке", "1223 год", DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1), 10)
+            new Event("битва на реке Калке", "1223 год", DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(2), 10)
             {
                 Id = EventGuids[1],
             },
 
-            new Event("Отечественная война", "1812 год", DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1), 10)
+            new Event("Отечественная война", "1812 год", DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(2), 10)
             {
                 Id = EventGuids[2],
             }
@@ -156,11 +156,53 @@ public class BookingServiceTests
             await bookingService.CreateBookingAsync(EventGuids[i % EventGuids.Length], userId);
 
         var bookings = await bookingService.GetBookingsByUserId(userId);
-        await bookingService.CancelBookingAsync(bookings[0].Id);
+        await bookingService.CancelBookingAsync(bookings[0].Id, userId, isAdmin: false);
 
         var newBooking = await bookingService.CreateBookingAsync(EventGuids[0], userId);
 
         Assert.Equal(userId, newBooking.UserId);
+    }
+
+    [Fact]
+    public async Task CreateBooking_PastEvent_EventExpiredException()
+    {
+        var pastEventId = Guid.NewGuid();
+        var userId = UserGuids[0];
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        dbContext.Events.Add(new Event(
+            "Прошедшее событие",
+            "Уже началось",
+            DateTime.UtcNow.AddDays(-2),
+            DateTime.UtcNow.AddDays(-1),
+            10)
+        {
+            Id = pastEventId,
+        });
+        await dbContext.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<EventExpiredException>(async () =>
+            await bookingService.CreateBookingAsync(pastEventId, userId));
+    }
+
+    [Fact]
+    public async Task CreateBooking_ActiveBookingLimit_DoesNotAffectOtherUsers()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        for (var i = 0; i < 10; i++)
+            await bookingService.CreateBookingAsync(EventGuids[i % EventGuids.Length], UserGuids[0]);
+
+        await Assert.ThrowsAsync<ActiveBookingLimitExceededException>(async () =>
+            await bookingService.CreateBookingAsync(EventGuids[0], UserGuids[0]));
+
+        var booking = await bookingService.CreateBookingAsync(EventGuids[0], UserGuids[1]);
+
+        Assert.Equal(UserGuids[1], booking.UserId);
     }
 
     #endregion
@@ -261,7 +303,7 @@ public class BookingServiceTests
 
         var booking = await bookingService.CreateBookingAsync(eventId, userId);
 
-        await bookingService.CancelBookingAsync(booking.Id);
+        await bookingService.CancelBookingAsync(booking.Id, userId, isAdmin: false);
 
         var cancelledBooking = await dbContext.Bookings.FindAsync(booking.Id);
 
@@ -274,12 +316,13 @@ public class BookingServiceTests
     public async Task CancelBooking_KeyNotFoundException()
     {
         var randomId = Guid.NewGuid();
+        var userId = UserGuids[0];
 
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
         await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await bookingService.CancelBookingAsync(randomId));
+            await bookingService.CancelBookingAsync(randomId, userId, isAdmin: false));
     }
 
     [Fact]
@@ -292,10 +335,43 @@ public class BookingServiceTests
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
         var booking = await bookingService.CreateBookingAsync(eventId, userId);
-        await bookingService.CancelBookingAsync(booking.Id);
+        await bookingService.CancelBookingAsync(booking.Id, userId, isAdmin: false);
 
         await Assert.ThrowsAsync<BookingAlreadyCancelledException>(async () =>
-            await bookingService.CancelBookingAsync(booking.Id));
+            await bookingService.CancelBookingAsync(booking.Id, userId, isAdmin: false));
+    }
+
+    [Fact]
+    public async Task CancelBooking_OtherUserBooking_PermissionDeniedException()
+    {
+        var eventId = EventGuids[0];
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var booking = await bookingService.CreateBookingAsync(eventId, UserGuids[0]);
+
+        await Assert.ThrowsAsync<PermissionDeniedException>(async () =>
+            await bookingService.CancelBookingAsync(booking.Id, UserGuids[1], isAdmin: false));
+    }
+
+    [Fact]
+    public async Task CancelBooking_AdminCanCancelOtherUserBooking()
+    {
+        var eventId = EventGuids[0];
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var booking = await bookingService.CreateBookingAsync(eventId, UserGuids[0]);
+
+        await bookingService.CancelBookingAsync(booking.Id, UserGuids[1], isAdmin: true);
+
+        var cancelledBooking = await dbContext.Bookings.FindAsync(booking.Id);
+
+        Assert.NotNull(cancelledBooking);
+        Assert.Equal(BookingStatus.Cancelled, cancelledBooking.Status);
     }
 
     #endregion
