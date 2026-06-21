@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using EventService.Domain.Enums;
 
 namespace EventService.Application.DTOs.Auth;
 
-public class LoginDto
+public class RegisterDto
 {
     [Required] 
     [MinLength(3)] 
@@ -11,4 +12,6 @@ public class LoginDto
     [Required]
     [MinLength(3)]
     public string Password { get; set; } = "";
+    
+    public UserRole Role { get; set; } =  UserRole.User;
 }
