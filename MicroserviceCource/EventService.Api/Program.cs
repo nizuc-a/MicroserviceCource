@@ -5,6 +5,7 @@ using EventService.Domain.Settings;
 using EventService.Infrastructure;
 using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,31 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Event Service API",
+        Version = "v1"
+    });
+
+    const string schemeId = "Bearer";
+
+    options.AddSecurityDefinition(schemeId, new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "JWT-токен. Введите значение в формате: Bearer {token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference(schemeId, document)] = []
+    });
+});
 
 builder.Services.AddHostedService<BookingBackgroundService>();
 

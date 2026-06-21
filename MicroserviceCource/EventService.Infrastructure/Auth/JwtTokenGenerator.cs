@@ -18,7 +18,7 @@ public class JwtTokenGenerator(IOptions<JwtSettings> options) : ITokenGenerator
         var claims = new Dictionary<string, object>
         {
             [JwtRegisteredClaimNames.Sub] = user.Id.ToString(),
-            ["role"] = user.Role,
+            ["role"] = user.Role.ToString(),
             [JwtRegisteredClaimNames.Jti] = Guid.NewGuid().ToString(),
         };
 
