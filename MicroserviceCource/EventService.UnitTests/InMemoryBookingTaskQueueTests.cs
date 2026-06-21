@@ -15,7 +15,7 @@ public class InMemoryBookingTaskQueueTests
     [Fact]
     public void EnqueueAndDequeueBooking_Correct()
     {
-        var booking = new Booking(Guid.NewGuid());
+        var booking = new Booking(Guid.NewGuid(), Guid.NewGuid());
         
         _bookingTaskQueue.Enqueue(booking);
 

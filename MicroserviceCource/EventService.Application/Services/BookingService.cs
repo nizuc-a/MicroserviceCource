@@ -7,7 +7,10 @@ using EventService.Domain.Exceptions;
 
 namespace EventService.Application.Services;
 
-public class BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository) : IBookingService
+public class BookingService(
+    IBookingRepository bookingRepository,
+    IEventRepository eventRepository,
+    IUserRepository userRepository) : IBookingService
 {
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _eventLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _bookingLocks = new();
@@ -20,6 +23,10 @@ public class BookingService(IBookingRepository bookingRepository, IEventReposito
 
         try
         {
+            var user = await userRepository.GetUserByIdAsync(userId, ct);
+            if (user == null)
+                throw new UserNotFoundException($"User with Id {userId} not found");
+
             var eventEntity = await eventRepository.GetByIdAsync(eventId, ct);
             if (eventEntity == null)
                 throw new KeyNotFoundException($"Event with Id {eventId} not found");
