@@ -2,15 +2,18 @@
 using EventService.Application.DTOs.Event;
 using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Api.Controllers;
 
 [ApiController]
 [Route("events")]
+[Authorize]
 public class EventsController(IEventService eventService) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Roles = "Admin,User")]
     public async Task<ActionResult<PaginatedResult<Event>>> GetAll(
         [FromQuery] string? title = null,
         [FromQuery] DateTime? from = null,
@@ -24,6 +27,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "Admin,User")]
     public async Task<ActionResult<Event>> GetEventById(Guid id, CancellationToken ct = default)
     {
         var value = await eventService.GetById(id, ct);
@@ -32,6 +36,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Event>> AddEvent([FromBody] AddEventDto dto, CancellationToken ct = default)
     {
         var result = await eventService.AddEvent(dto, ct);
@@ -40,6 +45,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventDto dto, CancellationToken ct = default)
     {
         await eventService.UpdateEvent(id, dto, ct);
@@ -48,6 +54,7 @@ public class EventsController(IEventService eventService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteEvent(Guid id, CancellationToken ct = default)
     {
         await eventService.DeleteEventById(id,ct);

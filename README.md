@@ -1,7 +1,7 @@
 # EventService API
 
 Сервис для управления событиями и бронированиями.  
-Реализован на **ASP.NET Core 8** с использованием **PostgreSQL**, **Entity Framework Core**, **чистой архитектуры** и **конкурентной обработки**.
+Реализован на **ASP.NET Core 10** с использованием **PostgreSQL**, **Entity Framework Core**, **чистой архитектуры** и **конкурентной обработки**.
 
 ---
 
@@ -14,6 +14,7 @@
 - [Миграции](#миграции)
 - [Тестирование](#тестирование)
 - [API Endpoints](#api-endpoints)
+- [Аутентификация и авторизация](#аутентификация-и-авторизация)
 - [Обработка конкурентности](#обработка-конкурентности)
 - [Фоновый сервис](#фоновый-сервис)
 
@@ -32,7 +33,10 @@
 - **Репозитории** (`IEventRepository`, `IBookingRepository`)
 - **Чистая архитектура** (4 проекта)
 - **Интеграционные тесты** с реальной БД (Testcontainers)
-- **Swagger** документация
+- **JWT-аутентификация** (регистрация, логин, защита эндпоинтов)
+- **Ролевая модель** (`Admin` / `User`) с разграничением прав
+- **Доменные правила бронирования**: запрет бронирования прошедших событий, лимит активных броней (10), отмена с проверкой прав
+- **Swagger** документация с поддержкой JWT (кнопка Authorize)
 
 ---
 
@@ -47,6 +51,7 @@
 | Контейнеризация      | Docker + Testcontainers                  |
 | Тесты                | xUnit, Moq, FluentAssertions            |
 | Документация API     | Swagger / Swashbuckle                    |
+| Аутентификация       | JWT Bearer                               |
 | Архитектура          | Clean Architecture (Domain, Application, Infrastructure, Presentation) |
 
 ---
@@ -75,12 +80,12 @@ EventService.Api (Presentation) # Контроллеры, Middleware, DI, Backgr
 
 ## Запуск проекта
 
-### 1. Клонирование и переключение на ветку `sprint-7`
+### 1. Клонирование и переключение на ветку `sprint-8`
 
 ```bash
 git clone https://github.com/nizuc-a/MicroserviceCource.git
 cd MicroserviceCource
-git checkout sprint-7
+git checkout sprint-8
 ```
 
 ### 2. Запуск PostgreSQL через Docker
@@ -158,17 +163,65 @@ dotnet test
 ## API Endpoints
 
 
-| Метод   | Эндпоинт   |    Описание|
-|---------|------------|------------|
-| GET | `/api/events` | Получить список событий (пагинация, фильтры) |
-| GET | `/api/events/{id}` | Получить событие по ID |
-| POST | `/api/events` | Создать событие (TotalSeats обязателен) |
-| PUT | `/api/events/{id}` | Обновить событие |
-| DELETE | `/api/events/{id}` | Удалить событие (и все его брони) |
-| POST | `/api/events/{id}/book` | Создать бронь на событие |
-| GET | `/api/bookings/{id}` | Получить информацию о брони |
+| Метод   | Эндпоинт   |    Описание| Доступ |
+|---------|------------|------------|--------|
+| POST | `/auth/register` | Регистрация пользователя | Без токена |
+| POST | `/auth/login` | Получение JWT-токена | Без токена |
+| GET | `/events` | Получить список событий (пагинация, фильтры) | Admin, User |
+| GET | `/events/{id}` | Получить событие по ID | Admin, User |
+| POST | `/events` | Создать событие (TotalSeats обязателен) | Admin |
+| PUT | `/events/{id}` | Обновить событие | Admin |
+| DELETE | `/events/{id}` | Удалить событие (и все его брони) | Admin |
+| POST | `/events/{id}/book` | Создать бронь на событие | Admin, User |
+| GET | `/bookings/{id}` | Получить информацию о брони | Admin, User |
+| DELETE | `/bookings/{id}` | Отменить бронь | Admin, User |
 
 Подробная спецификация доступна в Swagger: `/swagger`.
+
+---
+
+## Аутентификация и авторизация
+
+### Ролевая модель
+
+| Роль | Права |
+|------|-------|
+| `User` | Бронирование событий, просмотр событий и своих броней, отмена **своих** броней |
+| `Admin` | Все права `User` + создание/редактирование/удаление событий, отмена **любых** броней |
+
+### Получение JWT-токена через Swagger
+
+1. Зарегистрируйте пользователя через `POST /auth/register`:
+   ```json
+   {
+     "login": "admin",
+     "password": "admin123",
+     "role": "Admin"
+   }
+   ```
+2. Получите токен через `POST /auth/login`:
+   ```json
+   {
+     "login": "admin",
+     "password": "admin123"
+   }
+   ```
+3. Нажмите кнопку **Authorize** в Swagger и введите: `Bearer {ваш_токен}`.
+4. После этого защищённые эндпоинты будут отправляться с заголовком `Authorization`.
+
+### Настройка JWT
+
+Параметры JWT задаются в `EventService.Api/appsettings.json`:
+
+```json
+"Jwt": {
+  "Issuer": "EventService",
+  "Audience": "EventService",
+  "SigningKey": "your-secret-key-here",
+  "ExpirationMinutes": 60
+}
+```
+---
 
 #### GET `/events`
 
@@ -338,3 +391,5 @@ public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct
 - `Confirmed` – бронь подтверждена (фоновый сервис через 5 секунд переводит в этот статус, если событие существует).
 
 - `Rejected` – бронь отклонена (событие не найдено, нет мест или другая ошибка).
+
+- `Cancelled` – бронь отменена пользователем или администратором.

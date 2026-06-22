@@ -12,7 +12,10 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
             t => { t.HasCheckConstraint("CK_events_StartBeforeEnd", "\"start_at\" < \"end_at\""); });
 
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedNever();
+        
+        builder.Property(e => e.Id)
+            .HasColumnName("id")
+            .ValueGeneratedNever();
 
         builder.HasIndex(e => e.StartAt);
         builder.HasIndex(e => e.EndAt);

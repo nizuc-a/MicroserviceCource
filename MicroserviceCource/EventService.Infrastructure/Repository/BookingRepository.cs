@@ -1,5 +1,7 @@
 using EventService.Application.Abstractions.Repositories;
 using EventService.Domain.Entities;
+using EventService.Domain.Enums;
+using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.Infrastructure.Repository;
@@ -16,9 +18,44 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
     {
         var booking = await context.Bookings
             .Include(x => x.Event)
+            .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == bookingId, ct);
         
         return booking;
+    }
+
+    public async Task<List<Booking>> GetBookingsByUserId(Guid userId, CancellationToken ct = default)
+    {
+        var bookings = context.Bookings
+            .Include(x => x.Event)
+            .Include(x => x.User)
+            .Where(x => x.UserId == userId);
+        
+        return await bookings.ToListAsync(ct);
+    }
+
+    public async Task<int> CountActiveBookingsByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        return await context.Bookings
+            .CountAsync(
+                x => x.UserId == userId &&
+                     (x.Status == BookingStatus.Pending || x.Status == BookingStatus.Confirmed),
+                ct);
+    }
+
+    public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
+    {
+        var booking = context.Bookings
+            .Include(x=> x.Event)
+            .FirstOrDefault(x => x.Id == bookingId);
+        
+        if (booking == null)
+            return;
+        
+        booking.Cancel();
+        booking.Event.ReleaseSeats();
+        
+        await SaveChangesAsync(ct);
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) =>  context.SaveChangesAsync(ct);

@@ -1,15 +1,21 @@
 using EventService.Domain.Enums;
+using EventService.Domain.Exceptions;
 
 namespace EventService.Domain.Entities;
 
 public class Booking
 {
-    public Booking(Guid eventId)
+    public Booking(Guid eventId,  Guid userId)
     {
         EventId = eventId;
+        UserId = userId;
     }
     
     public Guid Id { get; set; } =  Guid.NewGuid();
+    
+    public Guid UserId { get; set; }
+    
+    public User User { get; set; }
     
     public Guid EventId { get; set; }
 
@@ -30,6 +36,15 @@ public class Booking
     public void Reject()
     {
         Status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.UtcNow;
+    }
+
+    public void Cancel()
+    {
+        if (Status == BookingStatus.Cancelled)
+            throw new BookingAlreadyCancelledException($"Booking with Id {Id} is already cancelled");
+        
+        Status = BookingStatus.Cancelled;
         ProcessedAt = DateTime.UtcNow;
     }
 }

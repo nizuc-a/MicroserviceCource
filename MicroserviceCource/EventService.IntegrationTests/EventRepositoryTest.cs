@@ -1,5 +1,6 @@
 using EventService.Domain.Entities;
 using EventService.Infrastructure;
+using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
@@ -329,18 +330,18 @@ public class EventRepositoryTest
         context.Events.AddRange(event1, event2);
         await context.SaveChangesAsync();
 
+        var user = await IntegrationTestDataHelper.SeedUserAsync(context, "cascade_user");
+
         var event1Id = event1.Id;
         var event2Id = event2.Id;
 
         var bookingRepository = new BookingRepository(context);
-        
-        
-        
-        await bookingRepository.CreateBookingAsync(new Booking(event1Id));
-        await bookingRepository.CreateBookingAsync(new Booking(event1Id));
 
-        await bookingRepository.CreateBookingAsync(new Booking(event2Id));
-        await bookingRepository.CreateBookingAsync(new Booking(event2Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event1Id, user.Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event1Id, user.Id));
+
+        await bookingRepository.CreateBookingAsync(new Booking(event2Id, user.Id));
+        await bookingRepository.CreateBookingAsync(new Booking(event2Id, user.Id));
 
         
         await using var verifyContext = CreateContext();

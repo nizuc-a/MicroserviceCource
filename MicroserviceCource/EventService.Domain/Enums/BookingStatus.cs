@@ -9,5 +9,7 @@ public enum BookingStatus
     [Description("Бронь подтверждена")]
     Confirmed,
     [Description("Бронь отклонена")]
-    Rejected
+    Rejected,
+    [Description("Бронь отменена")]
+    Cancelled
 }

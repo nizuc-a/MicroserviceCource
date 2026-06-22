@@ -1,7 +1,7 @@
 using EventService.Application.DTOs.Event;
 using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
-using EventService.Infrastructure;
+using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 
