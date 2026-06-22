@@ -2,18 +2,18 @@ using System.Collections.Concurrent;
 using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Domain.Entities;
-using EventService.Domain.Enums;
 using EventService.Domain.Exceptions;
+using EventService.Domain.Settings;
+using Microsoft.Extensions.Options;
 
 namespace EventService.Application.Services;
 
 public class BookingService(
     IBookingRepository bookingRepository,
     IEventRepository eventRepository,
-    IUserRepository userRepository) : IBookingService
+    IUserRepository userRepository,
+    IOptions<UserSettings> userSettings) : IBookingService
 {
-    private const int MaxActiveBookingsPerUser = 10;
-
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _eventLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _userLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _bookingLocks = new();
@@ -26,14 +26,15 @@ public class BookingService(
 
         try
         {
+            var maxActiveBookingsPerUser = userSettings.Value.MaxActiveBookingsPerUser;
             var user = await userRepository.GetUserByIdAsync(userId, ct);
             if (user == null)
                 throw new UserNotFoundException($"User with Id {userId} not found");
 
             var activeBookingsCount = await bookingRepository.CountActiveBookingsByUserIdAsync(userId, ct);
-            if (activeBookingsCount >= MaxActiveBookingsPerUser)
+            if (activeBookingsCount >= maxActiveBookingsPerUser)
                 throw new ActiveBookingLimitExceededException(
-                    $"User has reached the maximum limit of {MaxActiveBookingsPerUser} active bookings");
+                    $"User has reached the maximum limit of {maxActiveBookingsPerUser} active bookings");
 
             var eventSemaphore = _eventLocks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
 
@@ -94,9 +95,6 @@ public class BookingService(
 
             if (booking == null)
                 throw new KeyNotFoundException($"Booking with Id {bookingId} not found");
-
-            if (booking.Status == BookingStatus.Cancelled)
-                throw new BookingAlreadyCancelledException($"Booking with Id {bookingId} is already cancelled");
 
             var isOwner = booking.UserId == userId;
             if (!isAdmin && !isOwner)

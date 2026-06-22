@@ -1,4 +1,5 @@
 using EventService.Domain.Enums;
+using EventService.Domain.Exceptions;
 
 namespace EventService.Domain.Entities;
 
@@ -40,6 +41,9 @@ public class Booking
 
     public void Cancel()
     {
+        if (Status == BookingStatus.Cancelled)
+            throw new BookingAlreadyCancelledException($"Booking with Id {Id} is already cancelled");
+        
         Status = BookingStatus.Cancelled;
         ProcessedAt = DateTime.UtcNow;
     }

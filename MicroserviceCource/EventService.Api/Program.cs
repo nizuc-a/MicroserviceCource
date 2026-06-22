@@ -1,5 +1,6 @@
 using EventService.Api.BackgroundServices;
 using EventService.Api.Middleware;
+using EventService.Api.Services;
 using EventService.Application;
 using EventService.Domain.Settings;
 using EventService.Infrastructure;
@@ -23,6 +24,9 @@ builder.Services.AddJwtAuthentication(jwtSettings);
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));
+
+builder.Services.Configure<UserSettings>(
+    builder.Configuration.GetSection(UserSettings.SectionName));
 
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>

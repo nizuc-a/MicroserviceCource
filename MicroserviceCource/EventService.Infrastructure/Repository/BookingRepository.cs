@@ -45,11 +45,16 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
 
     public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
     {
-        var booking = context.Bookings.FirstOrDefault(x => x.Id == bookingId);
+        var booking = context.Bookings
+            .Include(x=> x.Event)
+            .FirstOrDefault(x => x.Id == bookingId);
+        
         if (booking == null)
             return;
         
         booking.Cancel();
+        booking.Event.ReleaseSeats();
+        
         await SaveChangesAsync(ct);
     }
 

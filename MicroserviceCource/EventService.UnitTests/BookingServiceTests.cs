@@ -4,7 +4,7 @@ using EventService.Application.Services;
 using EventService.Domain.Entities;
 using EventService.Domain.Enums;
 using EventService.Domain.Exceptions;
-using EventService.Infrastructure;
+using EventService.Domain.Settings;
 using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +33,7 @@ public class BookingServiceTests
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.Configure<UserSettings>(options => options.MaxActiveBookingsPerUser = 10);
         services.AddScoped<IBookingService, BookingService>();
 
         _serviceProvider = services.BuildServiceProvider();
@@ -310,6 +311,28 @@ public class BookingServiceTests
         Assert.NotNull(cancelledBooking);
         Assert.Equal(BookingStatus.Cancelled, cancelledBooking.Status);
         Assert.NotNull(cancelledBooking.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task CancelBooking_ReleasesEventSeat()
+    {
+        var eventId = EventGuids[0];
+        var userId = UserGuids[0];
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var eventEntity = await dbContext.Events.FindAsync(eventId);
+        var initialAvailableSeats = eventEntity!.AvailableSeats;
+
+        var booking = await bookingService.CreateBookingAsync(eventId, userId);
+
+        Assert.Equal(initialAvailableSeats - 1, (await dbContext.Events.FindAsync(eventId))!.AvailableSeats);
+
+        await bookingService.CancelBookingAsync(booking.Id, userId, isAdmin: false);
+
+        Assert.Equal(initialAvailableSeats, (await dbContext.Events.FindAsync(eventId))!.AvailableSeats);
     }
 
     [Fact]

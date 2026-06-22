@@ -2,9 +2,11 @@ using EventService.Application.Services;
 using EventService.Domain.Entities;
 using EventService.Domain.Enums;
 using EventService.Domain.Exceptions;
+using EventService.Domain.Settings;
 using EventService.Infrastructure.Repository;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace EventService.IntegrationTests;
@@ -236,6 +238,35 @@ public class BookRepositoryTests
     }
 
     [Fact]
+    public async Task CancelBookingAsync_ExistingBooking_ReleasesEventSeat()
+    {
+        await ResetDatabaseAsync();
+
+        await using var context = _container.CreateContext();
+        var user = await IntegrationTestDataHelper.SeedUserAsync(context);
+        var eventEntity = await IntegrationTestDataHelper.SeedEventAsync(context, totalSeats: 10);
+
+        var eventForUpdate = await context.Events.FindAsync(eventEntity.Id);
+        eventForUpdate!.TryReserveSeats();
+        await context.SaveChangesAsync();
+
+        var booking = new Booking(eventEntity.Id, user.Id);
+        var repository = new BookingRepository(context);
+        await repository.CreateBookingAsync(booking);
+
+        await using var cancelContext = _container.CreateContext();
+        var cancelRepository = new BookingRepository(cancelContext);
+        await cancelRepository.CancelBookingAsync(booking.Id);
+
+        await using var verifyContext = _container.CreateContext();
+        var updatedEvent = await verifyContext.Events.FindAsync(eventEntity.Id);
+
+        Assert.NotNull(updatedEvent);
+        Assert.Equal(10, updatedEvent.TotalSeats);
+        Assert.Equal(10, updatedEvent.AvailableSeats);
+    }
+
+    [Fact]
     public async Task CancelBookingAsync_NonExistingBooking_DoesNotThrow()
     {
         await ResetDatabaseAsync();
@@ -278,11 +309,12 @@ public class BookRepositoryTests
         await using var context = _container.CreateContext();
         var user = await IntegrationTestDataHelper.SeedUserAsync(context);
         var eventEntity = await IntegrationTestDataHelper.SeedEventAsync(context);
+        var userOptions = Options.Create(new UserSettings() { MaxActiveBookingsPerUser = 10 });
 
         var bookingRepository = new BookingRepository(context);
         var eventRepository = new EventRepository(context);
         var userRepository = new UserRepository(context);
-        var service = new BookingService(bookingRepository, eventRepository, userRepository);
+        var service = new BookingService(bookingRepository, eventRepository, userRepository,userOptions);
 
         await service.CreateBookingAsync(eventEntity.Id, user.Id);
 
@@ -304,7 +336,8 @@ public class BookRepositoryTests
         await using var context = _container.CreateContext();
         var user = await IntegrationTestDataHelper.SeedUserAsync(context);
         var eventEntity = await IntegrationTestDataHelper.SeedEventAsync(context, totalSeats);
-
+        var userOptions = Options.Create(new UserSettings() { MaxActiveBookingsPerUser = 10 });
+        
         var successfulBookings = 0;
         var failedBookings = 0;
 
@@ -315,7 +348,7 @@ public class BookRepositoryTests
                 var bookingRepository = new BookingRepository(context);
                 var eventRepository = new EventRepository(context);
                 var userRepository = new UserRepository(context);
-                var bookingService = new BookingService(bookingRepository, eventRepository, userRepository);
+                var bookingService = new BookingService(bookingRepository, eventRepository, userRepository, userOptions);
 
                 try
                 {
