@@ -1,7 +1,8 @@
-using BookingService.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using UserService.Domain.Exceptions;
+using PermissionDeniedException = UserService.Domain.Exceptions.PermissionDeniedException;
 
-namespace BookingService.Api.Middleware;
+namespace UserService.Api.Middleware;
 
 public class ExceptionHandlerMiddleware
 {
@@ -59,9 +60,10 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
             ArgumentException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
-            ActiveBookingLimitExceededException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
-            BookingAlreadyCancelledException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
+            NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
             PermissionDeniedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-403-forbidden",
+            UserNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
+            AuthenticationFailedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-401-unauthorized",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
 
@@ -70,9 +72,10 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException=> StatusCodes.Status404NotFound,
             ArgumentException => StatusCodes.Status400BadRequest,
-            ActiveBookingLimitExceededException => StatusCodes.Status409Conflict,
-            BookingAlreadyCancelledException => StatusCodes.Status409Conflict,
+            NoAvailableSeatsException => StatusCodes.Status409Conflict,
             PermissionDeniedException => StatusCodes.Status403Forbidden,
+            UserNotFoundException => StatusCodes.Status404NotFound,
+            AuthenticationFailedException => StatusCodes.Status401Unauthorized,
             _ => StatusCodes.Status500InternalServerError
         };
 }

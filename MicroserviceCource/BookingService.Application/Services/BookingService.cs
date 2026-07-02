@@ -4,7 +4,6 @@ using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.Entities;
 using BookingService.Domain.Exceptions;
 using BookingService.Domain.Options;
-using EventService.Domain.Exceptions;
 using Microsoft.Extensions.Options;
 
 namespace BookingService.Application.Services;
