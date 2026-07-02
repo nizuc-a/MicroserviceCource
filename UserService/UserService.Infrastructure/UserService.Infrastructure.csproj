@@ -7,14 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.EntityFrameworkCore">
-        <HintPath>..\..\..\..\.nuget\packages\microsoft.entityframeworkcore\10.0.4\lib\net10.0\Microsoft.EntityFrameworkCore.dll</HintPath>
+      <Reference Include="Microsoft.Extensions.Options">
+        <HintPath>..\..\..\..\.nuget\packages\microsoft.extensions.options\10.0.4\lib\net10.0\Microsoft.Extensions.Options.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\BookingService.Application\BookingService.Application.csproj" />
-      <ProjectReference Include="..\BookingService.Domain\BookingService.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,6 +20,11 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\UserService.Application\UserService.Application.csproj" />
+      <ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
     </ItemGroup>
 
 </Project>
