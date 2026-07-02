@@ -1,8 +1,8 @@
-using EventService.Domain.Entities;
+using BookingService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EventService.Infrastructure.Configurations;
+namespace BookingService.Infrastructure.Configuration;
 
 public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
@@ -40,15 +40,5 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 
         builder.Property(b => b.ProcessedAt)
             .HasColumnName("processed_at");
-
-        builder.HasOne(b => b.Event)
-            .WithMany(b => b.Bookings)
-            .HasForeignKey(b => b.EventId)
-            .OnDelete(DeleteBehavior.Restrict);
-        
-        builder.HasOne(b => b.User)
-            .WithMany(b => b.Bookings)
-            .HasForeignKey(b => b.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

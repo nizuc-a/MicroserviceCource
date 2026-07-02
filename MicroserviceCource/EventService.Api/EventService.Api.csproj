@@ -18,8 +18,4 @@
       <ProjectReference Include="..\EventService.Infrastructure\EventService.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Data\" />
-    </ItemGroup>
-
 </Project>

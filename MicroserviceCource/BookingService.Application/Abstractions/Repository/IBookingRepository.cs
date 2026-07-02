@@ -1,10 +1,11 @@
-using EventService.Domain.Entities;
+using BookingService.Domain.Entities;
 
-namespace EventService.Application.Abstractions.Repositories;
+namespace BookingService.Application.Abstractions.Repository;
 
 public interface IBookingRepository
 {
     Task CreateBookingAsync(Booking booking, CancellationToken ct = default);
+    
     Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default);
     
     Task<List<Booking>> GetBookingsByUserId(Guid userId, CancellationToken ct = default);

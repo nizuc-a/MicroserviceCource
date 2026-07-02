@@ -24,3 +24,9 @@ services:
 
 volumes:
   eventapi_pgdata:
+  bookingservice.api:
+    image: bookingservice.api
+    build:
+      context: .
+      dockerfile: BookingService.Api/Dockerfile
+

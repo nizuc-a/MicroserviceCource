@@ -1,17 +1,16 @@
 using System.Collections.Concurrent;
-using EventService.Application.Abstractions.Repositories;
-using EventService.Application.Abstractions.Services;
-using EventService.Domain.Entities;
+using BookingService.Application.Abstractions.Repository;
+using BookingService.Application.Abstractions.Services;
+using BookingService.Domain.Entities;
+using BookingService.Domain.Exceptions;
+using BookingService.Domain.Options;
 using EventService.Domain.Exceptions;
-using EventService.Domain.Settings;
 using Microsoft.Extensions.Options;
 
-namespace EventService.Application.Services;
+namespace BookingService.Application.Services;
 
 public class BookingService(
     IBookingRepository bookingRepository,
-    IEventRepository eventRepository,
-    IUserRepository userRepository,
     IOptions<UserSettings> userSettings) : IBookingService
 {
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _eventLocks = new();
@@ -27,11 +26,9 @@ public class BookingService(
         try
         {
             var maxActiveBookingsPerUser = userSettings.Value.MaxActiveBookingsPerUser;
-            var user = await userRepository.GetUserByIdAsync(userId, ct);
-            if (user == null)
-                throw new UserNotFoundException($"User with Id {userId} not found");
 
             var activeBookingsCount = await bookingRepository.CountActiveBookingsByUserIdAsync(userId, ct);
+            
             if (activeBookingsCount >= maxActiveBookingsPerUser)
                 throw new ActiveBookingLimitExceededException(
                     $"User has reached the maximum limit of {maxActiveBookingsPerUser} active bookings");
@@ -42,15 +39,13 @@ public class BookingService(
 
             try
             {
-                var eventEntity = await eventRepository.GetByIdAsync(eventId, ct);
-                if (eventEntity == null)
-                    throw new KeyNotFoundException($"Event with Id {eventId} not found");
-
-                if (eventEntity.StartAt <= DateTime.UtcNow)
-                    throw new EventExpiredException("Event has already started");
-
-                if (!eventEntity.TryReserveSeats())
-                    throw new NoAvailableSeatsException("No available seats for this event");
+                //TODO: Слушать отмену брони 
+                
+                // if (eventEntity.StartAt <= DateTime.UtcNow)
+                //     throw new EventExpiredException("Event has already started");
+                //
+                // if (!eventEntity.TryReserveSeats())
+                //     throw new NoAvailableSeatsException("No available seats for this event");
 
                 var booking = new Booking(eventId, userId);
 
@@ -101,6 +96,8 @@ public class BookingService(
                 throw new PermissionDeniedException($"User {userId} is not allowed to cancel booking {bookingId}");
 
             await bookingRepository.CancelBookingAsync(bookingId, ct);
+            
+            //TODO: Послать сигнал об отмене брони
         }
         finally
         {

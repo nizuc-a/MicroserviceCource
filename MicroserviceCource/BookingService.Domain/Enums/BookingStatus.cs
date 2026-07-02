@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace EventService.Domain.Enums;
+namespace BookingService.Domain.Enums;
 
 public enum BookingStatus
 {

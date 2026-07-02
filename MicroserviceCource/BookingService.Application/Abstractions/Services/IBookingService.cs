@@ -1,6 +1,6 @@
-using EventService.Domain.Entities;
+using BookingService.Domain.Entities;
 
-namespace EventService.Application.Abstractions.Services;
+namespace BookingService.Application.Abstractions.Services;
 
 public interface IBookingService
 {

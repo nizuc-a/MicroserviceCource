@@ -1,7 +1,7 @@
-using EventService.Domain.Enums;
-using EventService.Domain.Exceptions;
+using BookingService.Domain.Enums;
+using BookingService.Domain.Exceptions;
 
-namespace EventService.Domain.Entities;
+namespace BookingService.Domain.Entities;
 
 public class Booking
 {
@@ -15,11 +15,7 @@ public class Booking
     
     public Guid UserId { get; set; }
     
-    public User User { get; set; }
-    
     public Guid EventId { get; set; }
-
-    public Event Event { get; set; }
     
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 

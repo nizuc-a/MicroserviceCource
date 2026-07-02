@@ -1,17 +1,16 @@
 using System.Security.Claims;
-using EventService.Application.Abstractions.Services;
-using EventService.Application.Abstractions.TaskQueue;
-using EventService.Domain.Entities;
-using EventService.Domain.Enums;
+using BookingService.Application.Abstractions.Services;
+using BookingService.Domain.Entities;
+using BookingService.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventService.Api.Controllers;
+namespace BookingService.Api.Controllers;
 
 [ApiController]
 [Route("bookings")]
 [Authorize]
-public class BookingController(IBookingService bookingService, IBookingTaskQueue bookingTaskQueue) : ControllerBase
+public class BookingController(IBookingService bookingService) : ControllerBase
 {
     [HttpPost("/events/{eventId:guid}/book")]
     [Authorize(Roles = "Admin,User")]
@@ -23,7 +22,8 @@ public class BookingController(IBookingService bookingService, IBookingTaskQueue
         
         Booking newBooking = await bookingService.CreateBookingAsync(eventId, userId, ct);
 
-        bookingTaskQueue.Enqueue(newBooking);
+        //Todo: Добавить в очередь
+        // bookingTaskQueue.Enqueue(newBooking);
 
         return Accepted($"/bookings/{newBooking.Id}", new
         {
