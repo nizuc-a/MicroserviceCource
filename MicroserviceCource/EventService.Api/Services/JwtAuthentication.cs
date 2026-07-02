@@ -1,7 +1,7 @@
 using System.Text;
-using EventService.Domain.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Domain.Settings;
 
 namespace EventService.Api.Services;
 

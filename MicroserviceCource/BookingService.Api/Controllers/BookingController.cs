@@ -1,9 +1,9 @@
 using System.Security.Claims;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.Entities;
-using BookingService.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Domain.Enums;
 
 namespace BookingService.Api.Controllers;
 

@@ -1,4 +1,4 @@
-namespace UserService.Domain.Settings;
+namespace Shared.Domain.Settings;
 
 public class UserSettings
 {

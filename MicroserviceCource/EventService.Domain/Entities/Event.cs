@@ -20,7 +20,7 @@ public class Event
     public int TotalSeats { get; set; }
     public int AvailableSeats { get; set; }
 
-    public List<Guid> Bookings { get; set; } = new ();
+    public List<Guid> BookingIds { get; init; } = new();
 
     public void Update(string title, string description, DateTime startAt, DateTime endAt, int totalSeats,
         int availableSeats)
@@ -48,5 +48,16 @@ public class Event
             throw new ArgumentOutOfRangeException(nameof(count));
 
         AvailableSeats += count;
+    }
+
+    public void AddBooking(Guid bookingId)
+    {
+        if (!BookingIds.Contains(bookingId))
+            BookingIds.Add(bookingId);
+    }
+
+    public void RemoveBooking(Guid bookingId)
+    {
+        BookingIds.Remove(bookingId);
     }
 }

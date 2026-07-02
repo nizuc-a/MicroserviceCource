@@ -1,4 +1,4 @@
-namespace UserService.Domain.Enums;
+namespace Shared.Domain.Enums;
 
 public enum UserRole
 {

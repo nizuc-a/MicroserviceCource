@@ -44,5 +44,10 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.Property(e => e.AvailableSeats)
             .HasColumnName("available_seats")
             .IsRequired();
+
+        builder.Property(e => e.BookingIds)
+            .HasColumnName("booking_ids")
+            .HasColumnType("uuid[]")
+            .IsRequired();
     }
 }

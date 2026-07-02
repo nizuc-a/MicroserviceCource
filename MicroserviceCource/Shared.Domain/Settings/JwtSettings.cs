@@ -1,4 +1,4 @@
-namespace BookingService.Domain.Options;
+namespace Shared.Domain.Settings;
 
 public class JwtSettings
 {

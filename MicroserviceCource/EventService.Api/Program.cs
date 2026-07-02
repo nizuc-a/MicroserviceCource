@@ -1,11 +1,11 @@
 using EventService.Api.Middleware;
 using EventService.Api.Services;
 using EventService.Application;
-using EventService.Domain.Settings;
 using EventService.Infrastructure;
 using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using Shared.Domain.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 

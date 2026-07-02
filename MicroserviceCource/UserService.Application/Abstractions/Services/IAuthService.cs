@@ -1,4 +1,4 @@
-using UserService.Domain.Enums;
+using Shared.Domain.Enums;
 
 namespace UserService.Application.Abstractions.Services;
 

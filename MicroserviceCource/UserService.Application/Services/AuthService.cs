@@ -1,7 +1,7 @@
+using Shared.Domain.Enums;
 using UserService.Application.Abstractions.Auth;
 using UserService.Application.Abstractions.Repositories;
 using UserService.Application.Abstractions.Services;
-using UserService.Domain.Enums;
 using UserService.Domain.Exceptions;
 
 namespace UserService.Application.Services;

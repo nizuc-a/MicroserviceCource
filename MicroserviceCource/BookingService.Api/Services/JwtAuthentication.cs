@@ -1,7 +1,7 @@
 using System.Text;
-using BookingService.Domain.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Domain.Settings;
 
 namespace BookingService.Api.Services;
 

@@ -1,11 +1,11 @@
 using BookingService.Api.Middleware;
 using BookingService.Api.Services;
 using BookingService.Application;
-using BookingService.Domain.Options;
 using BookingService.Infrastructure;
 using BookingService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using Shared.Domain.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 

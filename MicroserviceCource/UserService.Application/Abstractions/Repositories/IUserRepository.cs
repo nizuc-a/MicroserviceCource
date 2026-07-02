@@ -1,5 +1,5 @@
+using Shared.Domain.Enums;
 using UserService.Domain.Entities;
-using UserService.Domain.Enums;
 
 namespace UserService.Application.Abstractions.Repositories;
 

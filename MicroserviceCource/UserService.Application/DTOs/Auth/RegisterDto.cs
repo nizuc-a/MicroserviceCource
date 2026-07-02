@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using UserService.Domain.Enums;
+using Shared.Domain.Enums;
 
 namespace UserService.Application.DTOs.Auth;
 

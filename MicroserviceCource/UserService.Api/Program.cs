@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using Shared.Domain.Settings;
 using UserService.Api.Middleware;
 using UserService.Api.Services;
 using UserService.Application;
-using UserService.Domain.Settings;
 using UserService.Infrastructure;
 using UserService.Infrastructure.DbContext;
 

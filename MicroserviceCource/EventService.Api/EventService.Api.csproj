@@ -16,6 +16,7 @@
       <ProjectReference Include="..\EventService.Application\EventService.Application.csproj" />
       <ProjectReference Include="..\EventService.Domain\EventService.Domain.csproj" />
       <ProjectReference Include="..\EventService.Infrastructure\EventService.Infrastructure.csproj" />
+      <ProjectReference Include="..\Shared.Domain\Shared.Domain.csproj" />
  </ItemGroup>
 
 </Project>

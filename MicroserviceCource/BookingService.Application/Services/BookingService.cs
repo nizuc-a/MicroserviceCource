@@ -3,8 +3,8 @@ using BookingService.Application.Abstractions.Repository;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.Entities;
 using BookingService.Domain.Exceptions;
-using BookingService.Domain.Options;
 using Microsoft.Extensions.Options;
+using Shared.Domain.Settings;
 
 namespace BookingService.Application.Services;
 

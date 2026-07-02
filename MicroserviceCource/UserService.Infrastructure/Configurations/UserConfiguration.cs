@@ -30,5 +30,10 @@ public class UserConfiguration: IEntityTypeConfiguration<User>
             .HasColumnName("status")
             .HasConversion<string>()
             .IsRequired();
+        
+        builder.Property(e => e.BookingIds)
+            .HasColumnName("booking_ids")
+            .HasColumnType("uuid[]")
+            .IsRequired();
     }
 }

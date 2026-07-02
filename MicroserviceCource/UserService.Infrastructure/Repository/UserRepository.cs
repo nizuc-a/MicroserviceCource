@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Enums;
 using UserService.Application.Abstractions.Repositories;
 using UserService.Domain.Entities;
-using UserService.Domain.Enums;
 using UserService.Infrastructure.DbContext;
 
 namespace UserService.Infrastructure.Repository;

@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using UserService.Domain.Settings;
+using Shared.Domain.Settings;
 
 namespace UserService.Api.Services;
 

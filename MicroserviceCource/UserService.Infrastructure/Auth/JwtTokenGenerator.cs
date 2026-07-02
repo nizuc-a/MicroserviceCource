@@ -2,9 +2,9 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Domain.Settings;
 using UserService.Application.Abstractions.Auth;
 using UserService.Domain.Entities;
-using UserService.Domain.Settings;
 
 namespace UserService.Infrastructure.Auth;
 
