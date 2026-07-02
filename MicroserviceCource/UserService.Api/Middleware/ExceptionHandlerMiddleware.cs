@@ -60,7 +60,6 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
             ArgumentException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
-            NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
             PermissionDeniedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-403-forbidden",
             UserNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
             AuthenticationFailedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-401-unauthorized",
@@ -72,7 +71,6 @@ public class ExceptionHandlerMiddleware
         {
             KeyNotFoundException=> StatusCodes.Status404NotFound,
             ArgumentException => StatusCodes.Status400BadRequest,
-            NoAvailableSeatsException => StatusCodes.Status409Conflict,
             PermissionDeniedException => StatusCodes.Status403Forbidden,
             UserNotFoundException => StatusCodes.Status404NotFound,
             AuthenticationFailedException => StatusCodes.Status401Unauthorized,

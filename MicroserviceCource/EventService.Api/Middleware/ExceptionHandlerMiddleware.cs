@@ -61,11 +61,7 @@ public class ExceptionHandlerMiddleware
             ArgumentException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
             NoAvailableSeatsException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
             EventExpiredException => "https://datatracker.ietf.org/doc/html/rfc9110#name-400-bad-request",
-            ActiveBookingLimitExceededException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
-            BookingAlreadyCancelledException => "https://datatracker.ietf.org/doc/html/rfc9110#name-409-conflict",
             PermissionDeniedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-403-forbidden",
-            UserNotFoundException => "https://datatracker.ietf.org/doc/html/rfc9110#name-404-not-found",
-            AuthenticationFailedException => "https://datatracker.ietf.org/doc/html/rfc9110#name-401-unauthorized",
             _ => "https://datatracker.ietf.org/doc/html/rfc9110"
         };
 
@@ -76,11 +72,7 @@ public class ExceptionHandlerMiddleware
             ArgumentException => StatusCodes.Status400BadRequest,
             NoAvailableSeatsException => StatusCodes.Status409Conflict,
             EventExpiredException => StatusCodes.Status400BadRequest,
-            ActiveBookingLimitExceededException => StatusCodes.Status409Conflict,
-            BookingAlreadyCancelledException => StatusCodes.Status409Conflict,
             PermissionDeniedException => StatusCodes.Status403Forbidden,
-            UserNotFoundException => StatusCodes.Status404NotFound,
-            AuthenticationFailedException => StatusCodes.Status401Unauthorized,
             _ => StatusCodes.Status500InternalServerError
         };
 }

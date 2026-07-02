@@ -11,7 +11,6 @@ public class EventRepository(AppDbContext context) : IEventRepository
         CancellationToken ct = default)
     {
         var query = context.Events
-            .Include(x=> x.Bookings)
             .AsQueryable();
         
         if(!string.IsNullOrWhiteSpace(title))

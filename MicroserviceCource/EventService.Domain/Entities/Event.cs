@@ -19,8 +19,8 @@ public class Event
     public DateTime EndAt { get; set; }
     public int TotalSeats { get; set; }
     public int AvailableSeats { get; set; }
-    
-    public List<Booking> Bookings { get; set; }
+
+    public List<Guid> Bookings { get; set; } = new ();
 
     public void Update(string title, string description, DateTime startAt, DateTime endAt, int totalSeats,
         int availableSeats)

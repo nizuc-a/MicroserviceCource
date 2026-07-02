@@ -1,4 +1,3 @@
-using EventService.Api.BackgroundServices;
 using EventService.Api.Middleware;
 using EventService.Api.Services;
 using EventService.Application;
@@ -61,7 +60,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddHostedService<BookingBackgroundService>();
+//Todo: Сделать слушателя
+//builder.Services.AddHostedService<BookingBackgroundService>();
 
 var app = builder.Build();
 
