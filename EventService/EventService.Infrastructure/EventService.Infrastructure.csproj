@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Confluent.Kafka" Version="2.15.0" />
       <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4">
@@ -23,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Shared.Domain\Shared.Domain.csproj" />
       <ProjectReference Include="..\EventService.Application\EventService.Application.csproj" />
       <ProjectReference Include="..\EventService.Domain\EventService.Domain.csproj" />
     </ItemGroup>

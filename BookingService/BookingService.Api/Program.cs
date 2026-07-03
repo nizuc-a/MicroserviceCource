@@ -27,6 +27,9 @@ builder.Services.Configure<JwtSettings>(
 builder.Services.Configure<UserSettings>(
     builder.Configuration.GetSection(UserSettings.SectionName));
 
+builder.Services.Configure<KafkaSettings>(
+    builder.Configuration.GetSection(KafkaSettings.SectionName));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

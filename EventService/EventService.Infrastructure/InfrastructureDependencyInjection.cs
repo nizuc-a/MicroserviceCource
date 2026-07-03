@@ -1,5 +1,7 @@
+using EventService.Application.Abstractions.Producers;
 using EventService.Application.Abstractions.Repositories;
 using EventService.Infrastructure.DbContext;
+using EventService.Infrastructure.Producers;
 using EventService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +17,8 @@ public static class InfrastructureDependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IEventRepository, EventRepository>();
+
+        services.AddSingleton<IEventProducer, KafkaEventProducer>();
 
         return services;
     }
