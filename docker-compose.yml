@@ -37,10 +37,25 @@ services:
       timeout: 10s
       retries: 15
 
+  # ─────────────────────────── Добавление топиков ───────────────────────────
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        kafka-topics --bootstrap-server kafka:29092 --create --topic events --partitions 1 --replication-factor 1 --if-not-exists
+        kafka-topics --bootstrap-server kafka:29092 --create --topic bookings --partitions 1 --replication-factor 1 --if-not-exists
+    restart: "no"
+
   # ─────────────────────────── Базы данных (по одной на сервис) ───────────────────────────
   users-db:
     image: postgres:16
     container_name: eventapi-users-db
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_DB: users
       POSTGRES_USER: postgres
@@ -56,6 +71,8 @@ services:
   events-db:
     image: postgres:16
     container_name: eventapi-events-db
+    ports:
+      - "5434:5432"
     environment:
       POSTGRES_DB: events
       POSTGRES_USER: postgres
@@ -71,6 +88,8 @@ services:
   bookings-db:
     image: postgres:16
     container_name: eventapi-bookings-db
+    ports:
+      - "5435:5432"
     environment:
       POSTGRES_DB: bookings
       POSTGRES_USER: postgres

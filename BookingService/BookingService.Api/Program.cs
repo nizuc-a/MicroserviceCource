@@ -17,6 +17,9 @@ var jwtSettings = builder.Configuration
                       .Get<JwtSettings>()
                   ?? throw new InvalidOperationException("Jwt settings not configured.");
 
+builder.Services.AddControllers();
+builder.Services.AddAuthorization();
+
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);

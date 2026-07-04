@@ -18,6 +18,9 @@ var jwtSettings = builder.Configuration
                       .Get<JwtSettings>()
                   ?? throw new InvalidOperationException("Jwt settings not configured.");
 
+builder.Services.AddControllers();
+builder.Services.AddAuthorization();
+
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
@@ -29,12 +32,6 @@ builder.Services.Configure<JwtSettings>(
 
 builder.Services.Configure<UserSettings>(
     builder.Configuration.GetSection(UserSettings.SectionName));
-
-builder.Services.AddControllers()
-    .AddNewtonsoftJson(options =>
-    {
-        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

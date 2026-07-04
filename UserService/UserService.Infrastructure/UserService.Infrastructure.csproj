@@ -7,12 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="Microsoft.Extensions.Options">
-        <HintPath>..\..\..\..\.nuget\packages\microsoft.extensions.options\10.0.4\lib\net10.0\Microsoft.Extensions.Options.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
@@ -23,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Shared.Domain\Shared.Domain.csproj" />
       <ProjectReference Include="..\UserService.Application\UserService.Application.csproj" />
       <ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
     </ItemGroup>
