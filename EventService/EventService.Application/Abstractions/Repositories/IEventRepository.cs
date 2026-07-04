@@ -16,5 +16,7 @@ public interface IEventRepository
 
     Task DeleteEventByIdAsync(Guid id, OutboxMessage message,  CancellationToken ct = default);
 
+    Task AddOutboxMessageAsync(OutboxMessage message, CancellationToken ct = default);
+
     public Task SaveChangesAsync(CancellationToken ct = default);
 }

@@ -5,7 +5,7 @@ namespace BookingService.Application.Abstractions.Repository;
 
 public interface IBookingRepository
 {
-    Task CreateBookingAsync(Booking booking, CancellationToken ct = default);
+    Task CreateBookingAsync(Booking booking, OutboxMessage message, CancellationToken ct = default);
     
     Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken ct = default);
     

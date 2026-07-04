@@ -59,6 +59,12 @@ public class EventRepository(AppDbContext context) : IEventRepository
         await context.OutboxMessages.AddAsync(message, ct);
         await context.SaveChangesAsync(ct);
     }
+
+    public async Task AddOutboxMessageAsync(OutboxMessage message, CancellationToken ct = default)
+    {
+        await context.OutboxMessages.AddAsync(message, ct);
+        await context.SaveChangesAsync(ct);
+    }
     
     public Task SaveChangesAsync(CancellationToken ct = default) =>  context.SaveChangesAsync(ct);
 }

@@ -9,9 +9,10 @@ namespace BookingService.Infrastructure.Repository;
 
 public class BookingRepository(AppDbContext context) : IBookingRepository
 {
-    public async Task CreateBookingAsync(Booking booking, CancellationToken ct = default)
+    public async Task CreateBookingAsync(Booking booking, OutboxMessage message, CancellationToken ct = default)
     {
         context.Bookings.Add(booking);
+        await context.OutboxMessages.AddAsync(message, ct);
         await context.SaveChangesAsync(ct);
     }
 

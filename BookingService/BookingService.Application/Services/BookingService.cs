@@ -3,6 +3,7 @@ using System.Text.Json;
 using BookingService.Application.Abstractions.Repository;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.Entities;
+using BookingService.Domain.Enums;
 using BookingService.Domain.Exceptions;
 using Microsoft.Extensions.Options;
 using Shared.Domain.Contracts.Booking;
@@ -52,7 +53,22 @@ public class BookingService(
 
                 var booking = new Booking(eventId, userId);
 
-                await bookingRepository.CreateBookingAsync(booking, ct);
+                var createdPayload = new BookingCreated
+                {
+                    BookingId = booking.Id,
+                    UserId = userId,
+                    EventId = eventId,
+                };
+
+                var outbox = new OutboxMessage
+                {
+                    Topic = Topic,
+                    Key = booking.Id.ToString(),
+                    Type = nameof(BookingCreated),
+                    Payload = JsonSerializer.Serialize(createdPayload),
+                };
+
+                await bookingRepository.CreateBookingAsync(booking, outbox, ct);
 
                 return booking;
             }
@@ -130,9 +146,50 @@ public class BookingService(
         }
     }
 
+    public async Task ConfirmBookingAsync(Guid bookingId, CancellationToken ct = default)
+    {
+        var semaphore = _bookingLocks.GetOrAdd(bookingId, _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync(ct);
+
+        try
+        {
+            var booking = await bookingRepository.GetBookingByIdAsync(bookingId, ct);
+            if (booking == null || booking.Status != BookingStatus.Pending)
+                return;
+
+            booking.Confirm();
+            await bookingRepository.SaveChangesAsync(ct);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    public async Task RejectBookingAsync(Guid bookingId, CancellationToken ct = default)
+    {
+        var semaphore = _bookingLocks.GetOrAdd(bookingId, _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync(ct);
+
+        try
+        {
+            var booking = await bookingRepository.GetBookingByIdAsync(bookingId, ct);
+            if (booking == null || booking.Status != BookingStatus.Pending)
+                return;
+
+            booking.Reject();
+            await bookingRepository.SaveChangesAsync(ct);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
     public Task SaveChangesAsync(CancellationToken ct = default) => bookingRepository.SaveChangesAsync(ct);
 
-    private OutboxMessage GetBookingCancelledOutboxMessage(Guid bookingId, Guid userId, Guid eventId, CancellationToken ct = default)
+    private OutboxMessage GetBookingCancelledOutboxMessage(Guid bookingId, Guid userId, Guid eventId,
+        CancellationToken ct = default)
     {
         var cancelPayload = new BookingCancelled
         {
@@ -148,7 +205,7 @@ public class BookingService(
             Type = nameof(BookingCancelled),
             Payload = JsonSerializer.Serialize(cancelPayload),
         };
-        
+
         return outbox;
     }
 }

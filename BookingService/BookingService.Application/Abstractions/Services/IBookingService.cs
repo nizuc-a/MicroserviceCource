@@ -14,5 +14,9 @@ public interface IBookingService
     
     Task CancelBookingsByEventIdAsync(Guid eventId, CancellationToken ct = default);
 
+    Task ConfirmBookingAsync(Guid bookingId, CancellationToken ct = default);
+
+    Task RejectBookingAsync(Guid bookingId, CancellationToken ct = default);
+
     public Task SaveChangesAsync(CancellationToken ct = default);
 }

@@ -13,16 +13,25 @@ public class IntegrationEventHandler(IEventService eventService) : IIntegrationE
         var handleEventDeleted = message.Type switch
         {
             nameof(BookingCancelled) => HandleBookingCancelled(message, ct),
+            nameof(BookingCreated) => HandleBookingCreated(message, ct),
             _ => throw new InvalidOperationException($"Unknown event type: {message.Type}")
         };
         
         await handleEventDeleted;
     }
 
+    private async Task HandleBookingCreated(InboxMessage message, CancellationToken ct)
+    {
+        var booking = JsonSerializer.Deserialize<BookingCreated>(message.Payload) 
+                      ?? throw new InvalidOperationException("Invalid BookingCreated payload");
+        
+        await eventService.BookEvent(booking.EventId, booking.BookingId, booking.UserId, ct);
+    }
+
     private async Task HandleBookingCancelled(InboxMessage message, CancellationToken ct)
     {
         var booking = JsonSerializer.Deserialize<BookingCancelled>(message.Payload)
-                     ?? throw new InvalidOperationException("Invalid EventDeleted payload");
+                     ?? throw new InvalidOperationException("Invalid BookingCancelled payload");
 
         var entity = await eventService.GetById(booking.EventId, ct);
         

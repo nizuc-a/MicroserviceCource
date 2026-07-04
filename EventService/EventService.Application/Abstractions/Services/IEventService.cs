@@ -1,4 +1,5 @@
 ﻿using EventService.Application.DTOs.Event;
+using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
 
 namespace EventService.Application.Abstractions.Services;
@@ -9,7 +10,7 @@ public interface IEventService
     /// Получить все события.
     /// </summary>
     /// <returns>Список событий.</returns>
-    Task<DTOs.Pagination.PaginatedResult<Event>> GetAll(string? title = null, DateTime? from= null, DateTime? to= null, int page = 1, int pageSize = 10, CancellationToken ct = default);
+    Task<PaginatedResult<Event>> GetAll(string? title = null, DateTime? from= null, DateTime? to= null, int page = 1, int pageSize = 10, CancellationToken ct = default);
 
     /// <summary>
     /// Получить событие по идентификатору.
@@ -36,6 +37,8 @@ public interface IEventService
     /// </summary>
     /// <param name="eventId">Id события которое нужно удалить</param>
     Task DeleteEventById(Guid eventId, CancellationToken ct = default);
+    
+    Task BookEvent(Guid eventId, Guid bookingId, Guid userId, CancellationToken ct = default);
 
     public Task SaveChangesAsync(CancellationToken ct = default);
 }
