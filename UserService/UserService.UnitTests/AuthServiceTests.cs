@@ -1,12 +1,12 @@
-using EventService.Application.Abstractions.Auth;
-using EventService.Application.Abstractions.Repositories;
-using EventService.Application.Services;
-using EventService.Domain.Entities;
-using EventService.Domain.Enums;
-using EventService.Domain.Exceptions;
 using Moq;
+using Shared.Domain.Enums;
+using UserService.Application.Abstractions.Auth;
+using UserService.Application.Abstractions.Repositories;
+using UserService.Application.Services;
+using UserService.Domain.Entities;
+using UserService.Domain.Exceptions;
 
-namespace EventService.UnitTests;
+namespace UserService.UnitTests;
 
 public class AuthServiceTests
 {

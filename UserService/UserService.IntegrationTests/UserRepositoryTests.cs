@@ -1,10 +1,11 @@
-using EventService.Domain.Enums;
-using EventService.Infrastructure.Repository;
-using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Enums;
+using UserService.Domain.Entities;
+using UserService.Infrastructure.Repository;
+using UserService.IntegrationTests.DatabaseFixtures;
 using Xunit;
 
-namespace EventService.IntegrationTests;
+namespace UserService.IntegrationTests;
 
 [Collection("Database")]
 public class UserRepositoryTests
@@ -120,5 +121,24 @@ public class UserRepositoryTests
         var user = await repository.GetUserByLoginAsync("nonexistent");
 
         Assert.Null(user);
+    }
+
+    [Fact]
+    public async Task AddBookingAsync_AddsBookingIdToUser()
+    {
+        await ResetDatabaseAsync();
+
+        await using var context = _container.CreateContext();
+        var repository = new UserRepository(context);
+        var user = await repository.RegisterAsync("bookinguser", "hash", UserRole.User);
+        var bookingId = Guid.NewGuid();
+
+        await repository.AddBookingAsync(user.Id, bookingId);
+
+        await using var verifyContext = _container.CreateContext();
+        var updatedUser = await verifyContext.Users.FindAsync(user.Id);
+
+        Assert.NotNull(updatedUser);
+        Assert.Contains(bookingId, updatedUser.BookingIds);
     }
 }

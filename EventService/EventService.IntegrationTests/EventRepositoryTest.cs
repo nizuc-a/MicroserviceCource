@@ -1,9 +1,10 @@
 using EventService.Domain.Entities;
-using EventService.Infrastructure;
 using EventService.Infrastructure.DbContext;
 using EventService.Infrastructure.Repository;
 using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Contracts.Event;
+using Shared.Domain.Entities;
 using Xunit;
 
 namespace EventService.IntegrationTests;
@@ -141,30 +142,6 @@ public class EventRepositoryTest
         Assert.NotNull(result);
         Assert.Equal(eventEntity.Title, result.Title);
         Assert.Equal(eventEntity.Description, result.Description);
-    }
-
-    [Fact]
-    public async Task DeleteEvent()
-    {
-        await ResetDatabaseAsync();
-
-        await using var context = CreateContext();
-        var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
-
-        var repository = new EventRepository(context);
-        await repository.AddEventAsync(eventEntity);
-
-        await using var verifyContext = CreateContext();
-        var verifyRepository = new EventRepository(verifyContext);
-
-        await verifyRepository.DeleteEventByIdAsync(eventEntity.Id);
-
-        await using var verifyContext2 = CreateContext();
-        var verifyRepository2 = new EventRepository(verifyContext2);
-
-        var result = await verifyRepository2.GetByIdAsync(eventEntity.Id);
-
-        Assert.Null(result);
     }
 
     [Fact]
@@ -318,53 +295,36 @@ public class EventRepositoryTest
     }
 
     [Fact]
-    public async Task DeleteEvent_CascadeDeletesOnlyItsOwnBookings()
+    public async Task DeleteEvent_RemovesEventAndCreatesOutboxMessage()
     {
         await ResetDatabaseAsync();
 
         await using var context = CreateContext();
+        var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
 
-        var event1 = new Event("Событие 1", "Описание 1", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
-        var event2 = new Event("Событие 2", "Описание 2", DateTime.UtcNow.AddDays(2), DateTime.UtcNow.AddDays(3), 20);
+        var repository = new EventRepository(context);
+        await repository.AddEventAsync(eventEntity);
 
-        context.Events.AddRange(event1, event2);
-        await context.SaveChangesAsync();
-
-        var user = await IntegrationTestDataHelper.SeedUserAsync(context, "cascade_user");
-
-        var event1Id = event1.Id;
-        var event2Id = event2.Id;
-
-        var bookingRepository = new BookingRepository(context);
-
-        await bookingRepository.CreateBookingAsync(new Booking(event1Id, user.Id));
-        await bookingRepository.CreateBookingAsync(new Booking(event1Id, user.Id));
-
-        await bookingRepository.CreateBookingAsync(new Booking(event2Id, user.Id));
-        await bookingRepository.CreateBookingAsync(new Booking(event2Id, user.Id));
-
-        
         await using var verifyContext = CreateContext();
-        var verifyEventRepository = new EventRepository(verifyContext);
+        var verifyRepository = new EventRepository(verifyContext);
 
-        var totalBookings = await verifyContext.Bookings.CountAsync();
-        Assert.Equal(4, totalBookings);
-        
-        await using var deleteContext = CreateContext();
+        var outboxMessage = new OutboxMessage
+        {
+            Topic = "events",
+            Key = eventEntity.Id.ToString(),
+            Type = nameof(EventDeleted),
+            Payload = $"{{\"EventId\":\"{eventEntity.Id}\"}}"
+        };
 
-        var eventToDelete = await deleteContext.Events.FirstAsync(e => e.Id == event1Id);
-        
-        await verifyEventRepository.DeleteEventByIdAsync(eventToDelete.Id);
-        
+        await verifyRepository.DeleteEventByIdAsync(eventEntity.Id, outboxMessage);
+
         await using var finalContext = CreateContext();
 
-        var remainingBookings = await finalContext.Bookings.ToListAsync();
-        Assert.Equal(2, remainingBookings.Count);
+        var result = await finalContext.Events.FindAsync(eventEntity.Id);
+        Assert.Null(result);
 
-        var event2StillExists = await finalContext.Events.AnyAsync(e => e.Id == event2Id);
-        Assert.True(event2StillExists);
-
-        var event1StillExists = await finalContext.Events.AnyAsync(e => e.Id == event1Id);
-        Assert.False(event1StillExists);
+        var outbox = await finalContext.OutboxMessages.FirstOrDefaultAsync(m => m.Key == eventEntity.Id.ToString());
+        Assert.NotNull(outbox);
+        Assert.Equal(nameof(EventDeleted), outbox.Type);
     }
 }

@@ -238,7 +238,7 @@ dotnet test
 - [`EventService/EventService.Api/appsettings.json`](EventService/EventService.Api/appsettings.json)
 - [`BookingService/BookingService.Api/appsettings.json`](BookingService/BookingService.Api/appsettings.json)
 
-Общая конфигурация JWT вынесена в [`Shared.Api/JwtAuthenticationExtensions.cs`](Shared.Api/JwtAuthenticationExtensions.cs) (`MapInboundClaims = false`, `RoleClaimType = "role"`).
+Общая конфигурация JWT вынесена в [`Shared/Shared.Api/JwtAuthenticationExtensions.cs`](Shared/Shared.Api/JwtAuthenticationExtensions.cs) (`MapInboundClaims = false`, `RoleClaimType = "role"`).
 
 ```json
 "Jwt": {

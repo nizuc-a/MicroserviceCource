@@ -1,16 +1,16 @@
-using EventService.Application.Abstractions.Repositories;
-using EventService.Application.Abstractions.Services;
-using EventService.Application.Services;
-using EventService.Domain.Entities;
-using EventService.Domain.Enums;
-using EventService.Domain.Exceptions;
-using EventService.Domain.Settings;
-using EventService.Infrastructure.DbContext;
-using EventService.Infrastructure.Repository;
+using BookingService.Application.Abstractions.Repository;
+using BookingService.Application.Abstractions.Services;
+using BookingService.Domain.Entities;
+using BookingService.Domain.Enums;
+using BookingService.Domain.Exceptions;
+using BookingService.Infrastructure.DbContext;
+using BookingService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Domain.Contracts.Booking;
+using Shared.Domain.Settings;
 
-namespace EventService.UnitTests;
+namespace BookingService.UnitTests;
 
 public class BookingServiceTests
 {
@@ -26,60 +26,15 @@ public class BookingServiceTests
     {
         var dbName = Guid.NewGuid().ToString();
         var services = new ServiceCollection();
-        
+
         services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase(dbName));
 
-        services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
         services.Configure<UserSettings>(options => options.MaxActiveBookingsPerUser = 10);
-        services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IBookingService, Application.Services.BookingService>();
 
         _serviceProvider = services.BuildServiceProvider();
-        
-        List<Event> events =
-        [
-            new Event("крещение Руси", "988 год", DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(2), 10)
-            {
-                Id = EventGuids[0],
-            },
-
-            new Event("битва на реке Калке", "1223 год", DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(2), 10)
-            {
-                Id = EventGuids[1],
-            },
-
-            new Event("Отечественная война", "1812 год", DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(2), 10)
-            {
-                Id = EventGuids[2],
-            }
-        ];
-
-        List<User> users =
-        [
-            new User("user1", "hash1")
-            {
-                Id = UserGuids[0],
-            },
-
-            new User("user2", "hash2")
-            {
-                Id = UserGuids[1],
-            }
-        ];
-        
-        SetupDbContext(events, users);
-    }
-    
-    private void SetupDbContext(List<Event> events, List<User> users)
-    {
-        using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        dbContext.Users.AddRange(users);
-        dbContext.Events.AddRange(events);
-        dbContext.SaveChanges();
     }
 
     #region Create Booking
@@ -93,41 +48,16 @@ public class BookingServiceTests
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        
+
         var booking = await bookingService.CreateBookingAsync(eventId, userId);
 
         Assert.Equal(eventId, booking.EventId);
         Assert.Equal(userId, booking.UserId);
+        Assert.Equal(BookingStatus.Pending, booking.Status);
 
-        var eventEntity = await dbContext.Events.FindAsync(eventId);
-
-        Assert.Equal(eventEntity?.AvailableSeats, eventEntity?.TotalSeats - 1);
-    }
-
-    [Fact]
-    public async Task CreateBooking_KeyNotFoundException()
-    {
-        var randomId = Guid.NewGuid();
-        var userId = UserGuids[0];
-
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-
-        await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-            await bookingService.CreateBookingAsync(randomId, userId));
-    }
-
-    [Fact]
-    public async Task CreateBooking_UserNotFoundException()
-    {
-        var eventId = EventGuids[0];
-        var randomUserId = Guid.NewGuid();
-
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-
-        await Assert.ThrowsAsync<UserNotFoundException>(async () =>
-            await bookingService.CreateBookingAsync(eventId, randomUserId));
+        var outbox = await dbContext.OutboxMessages.FirstOrDefaultAsync(m => m.Key == booking.Id.ToString());
+        Assert.NotNull(outbox);
+        Assert.Equal(nameof(BookingCreated), outbox.Type);
     }
 
     [Fact]
@@ -165,31 +95,6 @@ public class BookingServiceTests
     }
 
     [Fact]
-    public async Task CreateBooking_PastEvent_EventExpiredException()
-    {
-        var pastEventId = Guid.NewGuid();
-        var userId = UserGuids[0];
-
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        dbContext.Events.Add(new Event(
-            "Прошедшее событие",
-            "Уже началось",
-            DateTime.UtcNow.AddDays(-2),
-            DateTime.UtcNow.AddDays(-1),
-            10)
-        {
-            Id = pastEventId,
-        });
-        await dbContext.SaveChangesAsync();
-
-        await Assert.ThrowsAsync<EventExpiredException>(async () =>
-            await bookingService.CreateBookingAsync(pastEventId, userId));
-    }
-
-    [Fact]
     public async Task CreateBooking_ActiveBookingLimit_DoesNotAffectOtherUsers()
     {
         using var scope = _serviceProvider.CreateScope();
@@ -215,10 +120,10 @@ public class BookingServiceTests
     {
         var eventId = EventGuids[0];
         var userId = UserGuids[0];
-        
+
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-        
+
         var createdBooking = await bookingService.CreateBookingAsync(eventId, userId);
 
         var booking = await bookingService.GetBookingByIdAsync(createdBooking.Id);
@@ -231,7 +136,7 @@ public class BookingServiceTests
     public async Task GetBookingById_KeyNotFoundException()
     {
         var randomId = Guid.NewGuid();
-        
+
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
@@ -311,28 +216,11 @@ public class BookingServiceTests
         Assert.NotNull(cancelledBooking);
         Assert.Equal(BookingStatus.Cancelled, cancelledBooking.Status);
         Assert.NotNull(cancelledBooking.ProcessedAt);
-    }
 
-    [Fact]
-    public async Task CancelBooking_ReleasesEventSeat()
-    {
-        var eventId = EventGuids[0];
-        var userId = UserGuids[0];
-
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var eventEntity = await dbContext.Events.FindAsync(eventId);
-        var initialAvailableSeats = eventEntity!.AvailableSeats;
-
-        var booking = await bookingService.CreateBookingAsync(eventId, userId);
-
-        Assert.Equal(initialAvailableSeats - 1, (await dbContext.Events.FindAsync(eventId))!.AvailableSeats);
-
-        await bookingService.CancelBookingAsync(booking.Id, userId, isAdmin: false);
-
-        Assert.Equal(initialAvailableSeats, (await dbContext.Events.FindAsync(eventId))!.AvailableSeats);
+        var outbox = await dbContext.OutboxMessages
+            .Where(m => m.Type == nameof(BookingCancelled))
+            .FirstOrDefaultAsync(m => m.Key == booking.Id.ToString());
+        Assert.NotNull(outbox);
     }
 
     [Fact]
@@ -408,10 +296,10 @@ public class BookingServiceTests
     {
         var eventId = EventGuids[0];
         var userId = UserGuids[0];
-        
+
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-        
+
         var booking = await bookingService.CreateBookingAsync(eventId, userId);
 
         switch (status)
@@ -434,7 +322,7 @@ public class BookingServiceTests
         var eventId = EventGuids[0];
         var userId = UserGuids[0];
         const BookingStatus status = BookingStatus.Pending;
-        
+
         using var scope = _serviceProvider.CreateScope();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
@@ -446,80 +334,18 @@ public class BookingServiceTests
 
     #endregion
 
-    #region Overbooking
+    #region Concurrency
 
     [Fact]
-    public async Task CreateBooking_LimitBook_Correct()
+    public async Task CreateBooking_ConcurrentRequests_RespectsActiveBookingLimit()
     {
-        var eventId = EventGuids[0];
         var userId = UserGuids[0];
-        
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        const int maxActiveBookings = 10;
+        const int totalAttempts = 30;
 
-        var eventEntity = await dbContext.Events.FindAsync(eventId);
-
-        var bookings = new List<Booking>();
-        var availableSeats = eventEntity?.AvailableSeats;
-
-        for (int i = 0; i < availableSeats; i++)
-        {
-            var booking = await bookingService.CreateBookingAsync(eventId, userId);
-            bookings.Add(booking);
-
-            Assert.Equal(eventId, booking.EventId);
-            Assert.Equal(userId, booking.UserId);
-        }
-
-        var uniqueBookingCount = bookings.Select(x => x.Id).Distinct().Count();
-
-        Assert.Equal(uniqueBookingCount, bookings.Count);
-        Assert.Equal(0, eventEntity?.AvailableSeats);
-    }
-
-    [Fact]
-    public async Task CreateBooking_LimitBook_NoAvailableSeatsException()
-    {
-        var eventId = EventGuids[0];
-        var userId = UserGuids[0];
-
-        using var scope = _serviceProvider.CreateScope();
-        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        
-        var eventEntity = await dbContext.Events.FindAsync(eventId);
-        
-        var availableSeats = eventEntity?.AvailableSeats;
-
-        for (int i = 0; i < availableSeats; i++)
-        {
-            var booking = await bookingService.CreateBookingAsync(eventId, userId);
-
-            Assert.Equal(eventId, booking.EventId);
-            Assert.Equal(userId, booking.UserId);
-        }
-
-        await Assert.ThrowsAsync<NoAvailableSeatsException>(async () =>
-            await bookingService.CreateBookingAsync(eventId, UserGuids[1]));
-    }
-    
-    [Fact]
-    public async Task CreateBooking_HighConcurrency()
-    {
-        var eventId = EventGuids[0];
-        var userId = UserGuids[0];
-        
-        using var dbScope = _serviceProvider.CreateScope();
-        var dbContext = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var eventEntity = await dbContext.Events.FindAsync(eventId);
-        var availableSeats = eventEntity?.AvailableSeats ?? 0;
-        var totalAttempts = availableSeats * 3;
-        
         var successfulBookings = 0;
         var failedBookings = 0;
-        
+
         var tasks = Enumerable.Range(0, totalAttempts)
             .Select(_ => Task.Run(async () =>
             {
@@ -527,23 +353,19 @@ public class BookingServiceTests
                 var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
                 try
                 {
-                    await bookingService.CreateBookingAsync(eventId, userId);
+                    await bookingService.CreateBookingAsync(EventGuids[0], userId);
                     Interlocked.Increment(ref successfulBookings);
-                }
-                catch (NoAvailableSeatsException)
-                {
-                    Interlocked.Increment(ref failedBookings);
                 }
                 catch (ActiveBookingLimitExceededException)
                 {
                     Interlocked.Increment(ref failedBookings);
                 }
-            })); 
+            }));
 
         await Task.WhenAll(tasks);
-        
-        Assert.Equal(availableSeats, successfulBookings);
-        Assert.Equal(totalAttempts - availableSeats, failedBookings);
+
+        Assert.Equal(maxActiveBookings, successfulBookings);
+        Assert.Equal(totalAttempts - maxActiveBookings, failedBookings);
     }
 
     #endregion

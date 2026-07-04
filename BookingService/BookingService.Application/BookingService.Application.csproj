@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Shared.Domain\Shared.Domain.csproj" />
+      <ProjectReference Include="..\..\Shared\Shared.Domain\Shared.Domain.csproj" />
       <ProjectReference Include="..\BookingService.Domain\BookingService.Domain.csproj" />
     </ItemGroup>
 
