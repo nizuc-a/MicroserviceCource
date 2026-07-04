@@ -1,6 +1,6 @@
 using Shared.Domain.Entities;
 
-namespace EventService.Application.IntegrationEvents;
+namespace BookingService.Application.Abstractions.IntegrationEvents;
 
 public interface IIntegrationEventHandler
 {

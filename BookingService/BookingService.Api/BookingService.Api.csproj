@@ -15,18 +15,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Shared.Api\Shared.Api.csproj" />
       <ProjectReference Include="..\..\Shared.Domain\Shared.Domain.csproj" />
       <ProjectReference Include="..\BookingService.Application\BookingService.Application.csproj" />
       <ProjectReference Include="..\BookingService.Infrastructure\BookingService.Infrastructure.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer">
-        <HintPath>..\..\..\..\.nuget\packages\microsoft.aspnetcore.authentication.jwtbearer\10.0.9\lib\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll</HintPath>
-      </Reference>
-      <Reference Include="Microsoft.IdentityModel.Tokens">
-        <HintPath>..\..\..\..\.nuget\packages\microsoft.identitymodel.tokens\8.0.1\lib\net9.0\Microsoft.IdentityModel.Tokens.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
 </Project>

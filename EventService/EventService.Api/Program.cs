@@ -1,6 +1,7 @@
 using EventService.Api.Middleware;
 using EventService.Api.Services;
 using EventService.Application;
+using Shared.Api;
 using EventService.Infrastructure;
 using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,9 @@ using Microsoft.OpenApi;
 using Shared.Domain.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(); 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? throw new InvalidOperationException("Connection string 'Default' not found.");
@@ -23,10 +27,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
+builder.Services.AddApplicationHostedServices();
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 builder.Services.Configure<UserSettings>(builder.Configuration.GetSection(UserSettings.SectionName));
+
+builder.Services.Configure<KafkaSettings>(
+    builder.Configuration.GetSection(KafkaSettings.SectionName));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

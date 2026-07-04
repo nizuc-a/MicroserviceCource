@@ -93,14 +93,33 @@ git checkout sprint-8
 docker-compose up -d
 ```
 
-### 3. Применение миграций и запуск API
+### 3. Запуск сервисов
+
+Запустите каждый API в отдельном терминале:
+
 ```bash
-cd EventService.Api
+# UserService (аутентификация)
+cd UserService/UserService.Api
+dotnet run
+
+# EventService
+cd EventService/EventService.Api
+dotnet run
+
+# BookingService
+cd BookingService/BookingService.Api
 dotnet run
 ```
 
 При старте автоматически выполняется `db.Database.Migrate()`.
-Swagger будет доступен по адресу: `https://localhost:5000/swagger` (порт может отличаться).
+
+| Сервис | Swagger |
+|--------|---------|
+| UserService | `https://localhost:7153/swagger` |
+| EventService | `https://localhost:7231/swagger` |
+| BookingService | см. `launchSettings.json` |
+
+JWT-токен получается через **UserService** (`POST /auth/login`) и используется во всех остальных сервисах.
 
 ---
 
@@ -191,7 +210,8 @@ dotnet test
 
 ### Получение JWT-токена через Swagger
 
-1. Зарегистрируйте пользователя через `POST /auth/register`:
+1. Откройте Swagger **UserService**: `https://localhost:7153/swagger`
+2. Зарегистрируйте пользователя через `POST /auth/register`:
    ```json
    {
      "login": "admin",
@@ -199,19 +219,26 @@ dotnet test
      "role": "Admin"
    }
    ```
-2. Получите токен через `POST /auth/login`:
+   Поле `role` принимает строковые значения `"User"` или `"Admin"`.
+3. Получите токен через `POST /auth/login`:
    ```json
    {
      "login": "admin",
      "password": "admin123"
    }
    ```
-3. Нажмите кнопку **Authorize** в Swagger и введите: `Bearer {ваш_токен}`.
-4. После этого защищённые эндпоинты будут отправляться с заголовком `Authorization`.
+4. Скопируйте токен из ответа и нажмите **Authorize** в Swagger **EventService** или **BookingService**. Введите: `Bearer {ваш_токен}`.
+5. После этого защищённые эндпоинты будут отправляться с заголовком `Authorization`.
 
 ### Настройка JWT
 
-Параметры JWT задаются в `EventService.Api/appsettings.json`:
+Параметры JWT задаются одинаково во всех сервисах (секция `"Jwt"` в `appsettings.json` каждого API). Токены выдаёт **UserService**, остальные сервисы только проверяют их:
+
+- [`UserService/UserService.Api/appsettings.json`](UserService/UserService.Api/appsettings.json)
+- [`EventService/EventService.Api/appsettings.json`](EventService/EventService.Api/appsettings.json)
+- [`BookingService/BookingService.Api/appsettings.json`](BookingService/BookingService.Api/appsettings.json)
+
+Общая конфигурация JWT вынесена в [`Shared.Api/JwtAuthenticationExtensions.cs`](Shared.Api/JwtAuthenticationExtensions.cs) (`MapInboundClaims = false`, `RoleClaimType = "role"`).
 
 ```json
 "Jwt": {

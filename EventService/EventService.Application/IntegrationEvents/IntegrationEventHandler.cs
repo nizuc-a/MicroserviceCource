@@ -1,10 +1,10 @@
 using System.Text.Json;
+using EventService.Application.Abstractions.IntegrationEvents;
 using EventService.Application.Abstractions.Services;
-using EventService.Application.IntegrationEvents;
 using Shared.Domain.Contracts.Booking;
 using Shared.Domain.Entities;
 
-namespace EventService.Infrastructure.IntegrationEvents;
+namespace EventService.Application.IntegrationEvents;
 
 public class IntegrationEventHandler(IEventService eventService) : IIntegrationEventHandler
 {

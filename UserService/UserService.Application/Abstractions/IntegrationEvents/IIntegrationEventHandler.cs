@@ -1,6 +1,6 @@
 using Shared.Domain.Entities;
 
-namespace UserService.Application.IntegrationEvents;
+namespace UserService.Application.Abstractions.IntegrationEvents;
 
 public interface IIntegrationEventHandler
 {

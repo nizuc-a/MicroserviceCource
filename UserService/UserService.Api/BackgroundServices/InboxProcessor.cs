@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using UserService.Application.IntegrationEvents;
+using UserService.Application.Abstractions.IntegrationEvents;
 using UserService.Infrastructure.DbContext;
 
 namespace UserService.Api.BackgroundServices;

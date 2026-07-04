@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Shared.Domain.Settings;
+using System.Text.Json.Serialization;
+using Shared.Api;
 using UserService.Api.Middleware;
 using UserService.Api.Services;
 using UserService.Application;
@@ -17,7 +19,12 @@ var jwtSettings = builder.Configuration
                       .Get<JwtSettings>()
                   ?? throw new InvalidOperationException("Jwt settings not configured.");
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddAuthorization();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);

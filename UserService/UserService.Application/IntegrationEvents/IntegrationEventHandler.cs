@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Shared.Domain.Contracts.Booking;
 using Shared.Domain.Entities;
+using UserService.Application.Abstractions.IntegrationEvents;
 using UserService.Application.Abstractions.Repositories;
-using UserService.Application.IntegrationEvents;
 
-namespace UserService.Infrastructure.IntegrationEvents;
+namespace UserService.Application.IntegrationEvents;
 
 public class IntegrationEventHandler(IUserRepository userRepository) : IIntegrationEventHandler
 {

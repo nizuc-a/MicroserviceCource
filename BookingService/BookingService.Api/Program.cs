@@ -1,6 +1,8 @@
+using System.Text.Json.Serialization;
 using BookingService.Api.Middleware;
 using BookingService.Api.Services;
 using BookingService.Application;
+using Shared.Api;
 using BookingService.Infrastructure;
 using BookingService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +19,13 @@ var jwtSettings = builder.Configuration
                       .Get<JwtSettings>()
                   ?? throw new InvalidOperationException("Jwt settings not configured.");
 
-builder.Services.AddControllers();
-builder.Services.AddAuthorization();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
+builder.Services.AddAuthorization();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);

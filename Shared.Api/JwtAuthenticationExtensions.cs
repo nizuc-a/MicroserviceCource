@@ -1,11 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Domain.Settings;
 
-namespace EventService.Api.Services;
+namespace Shared.Api;
 
-public static class JwtAuthentication
+public static class JwtAuthenticationExtensions
 {
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
     {
@@ -16,6 +17,8 @@ public static class JwtAuthentication
             })
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
+                options.MapInboundClaims = false;
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -33,7 +36,7 @@ public static class JwtAuthentication
                     RoleClaimType = "role",
                 };
             });
-        
+
         return services;
     }
 }

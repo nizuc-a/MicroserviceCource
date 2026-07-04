@@ -1,5 +1,4 @@
-
-using EventService.Application.IntegrationEvents;
+using EventService.Application.Abstractions.IntegrationEvents;
 using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 

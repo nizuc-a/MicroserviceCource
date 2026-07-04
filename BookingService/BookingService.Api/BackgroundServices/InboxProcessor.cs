@@ -1,4 +1,4 @@
-using BookingService.Application.IntegrationEvents;
+using BookingService.Application.Abstractions.IntegrationEvents;
 using BookingService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
