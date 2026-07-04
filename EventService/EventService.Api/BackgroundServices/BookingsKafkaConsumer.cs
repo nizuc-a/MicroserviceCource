@@ -4,6 +4,7 @@ using EventService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shared.Domain.Entities;
+using Shared.Domain.Kafka;
 using Shared.Domain.Settings;
 
 namespace EventService.Api.BackgroundServices;
@@ -13,7 +14,6 @@ public class BookingsKafkaConsumer(
     IOptions<KafkaSettings> settings,
     ILogger<BookingsKafkaConsumer> logger) : BackgroundService
 {
-    private const string Topic = "bookings";
     private const string ConsumerGroup = "event-service";
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(2);
 
@@ -28,8 +28,8 @@ public class BookingsKafkaConsumer(
             EnableAutoOffsetStore = false
         }).Build();
 
-        consumer.Subscribe(Topic);
-        logger.LogInformation("Subscribed to {Topic}", Topic);
+        consumer.Subscribe(KafkaTopics.Bookings);
+        logger.LogInformation("Subscribed to {Topic}", KafkaTopics.Bookings);
 
         try
         {

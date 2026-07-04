@@ -9,13 +9,12 @@ using EventService.Domain.Exceptions;
 using Shared.Domain.Contracts.Booking;
 using Shared.Domain.Contracts.Event;
 using Shared.Domain.Entities;
+using Shared.Domain.Kafka;
 
 namespace EventService.Application.Services;
 
 public class EventService(IEventRepository eventRepository) : IEventService
 {
-    private const string EventsTopic = "events";
-    private const string BookingsTopic = "bookings";
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _bookingLocks = new();
 
     public async Task<PaginatedResult<Event>> GetAll(string? title = null, DateTime? from = null, DateTime? to = null,
@@ -79,7 +78,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
         var outboxMessage = new OutboxMessage
         {
-            Topic = EventsTopic,
+            Topic = KafkaTopics.Events,
             Key = eventId.ToString(),
             Type = nameof(EventDeleted),
             Payload = JsonSerializer.Serialize(payloadRaw)
@@ -88,8 +87,11 @@ public class EventService(IEventRepository eventRepository) : IEventService
         await eventRepository.DeleteEventByIdAsync(eventId, outboxMessage, ct);
     }
 
-    public async Task BookEvent(Guid eventId, Guid bookingId, Guid userId, CancellationToken ct = default)
+    public async Task BookEvent(Guid eventId, Guid bookingId, Guid userId, int seatCount = 1,
+        CancellationToken ct = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(seatCount, 1);
+
         var semaphore = _bookingLocks.GetOrAdd(bookingId, _ => new SemaphoreSlim(1, 1));
         await semaphore.WaitAsync(ct);
 
@@ -106,7 +108,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
             if (result.StartAt <= DateTime.UtcNow)
                 throw new EventExpiredException("Event has already started");
 
-            if (!result.TryReserveSeats())
+            if (!result.TryReserveSeats(seatCount))
                 throw new NoAvailableSeatsException("No available seats for this event");
             
             result.AddBooking(bookingId);
@@ -135,7 +137,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
         var outboxMessage = new OutboxMessage
         {
-            Topic = BookingsTopic,
+            Topic = KafkaTopics.Bookings,
             Key = bookingId.ToString(),
             Type = nameof(BookingConfirmed),
             Payload = JsonSerializer.Serialize(payload),
@@ -156,7 +158,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
         var outboxMessage = new OutboxMessage
         {
-            Topic = BookingsTopic,
+            Topic = KafkaTopics.Bookings,
             Key = bookingId.ToString(),
             Type = nameof(BookingRejected),
             Payload = JsonSerializer.Serialize(payload),

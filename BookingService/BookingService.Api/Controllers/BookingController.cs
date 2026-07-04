@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using BookingService.Application.Abstractions.Services;
+using BookingService.Application.DTOs;
 using BookingService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,18 +15,20 @@ public class BookingController(IBookingService bookingService) : ControllerBase
 {
     [HttpPost("/events/{eventId:guid}/book")]
     [Authorize(Roles = "Admin,User")]
-    public async Task<IActionResult> AddBooking([FromRoute] Guid eventId, CancellationToken ct)
+    public async Task<IActionResult> AddBooking([FromRoute] Guid eventId, [FromBody] CreateBookingDto dto,
+        CancellationToken ct)
     {
         var userIdValue = User.FindFirstValue("userId");
         if (!Guid.TryParse(userIdValue, out var userId))
             return Unauthorized();
         
-        Booking newBooking = await bookingService.CreateBookingAsync(eventId, userId, ct);
+        Booking newBooking = await bookingService.CreateBookingAsync(eventId, userId, dto.SeatCount, ct);
 
         return Accepted($"/bookings/{newBooking.Id}", new
         {
             bookingId = newBooking.Id,
             eventId = newBooking.EventId,
+            seatCount = newBooking.SeatCount,
             status = newBooking.Status
         });
     }

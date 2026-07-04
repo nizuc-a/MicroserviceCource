@@ -8,6 +8,7 @@ using BookingService.Domain.Exceptions;
 using Microsoft.Extensions.Options;
 using Shared.Domain.Contracts.Booking;
 using Shared.Domain.Entities;
+using Shared.Domain.Kafka;
 using Shared.Domain.Settings;
 
 namespace BookingService.Application.Services;
@@ -19,10 +20,12 @@ public class BookingService(
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _eventLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _userLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _bookingLocks = new();
-    private const string Topic = "bookings";
 
-    public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken ct = default)
+    public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, int seatCount = 1,
+        CancellationToken ct = default)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(seatCount, 1);
+
         var userSemaphore = _userLocks.GetOrAdd(userId, _ => new SemaphoreSlim(1, 1));
 
         await userSemaphore.WaitAsync(ct);
@@ -43,18 +46,20 @@ public class BookingService(
 
             try
             {
-                var booking = new Booking(eventId, userId);
+                var booking = new Booking(eventId, userId, seatCount);
 
                 var createdPayload = new BookingCreated
                 {
                     BookingId = booking.Id,
                     UserId = userId,
                     EventId = eventId,
+                    SeatCount = seatCount,
+                    CreatedAt = booking.CreatedAt,
                 };
 
                 var outbox = new OutboxMessage
                 {
-                    Topic = Topic,
+                    Topic = KafkaTopics.Bookings,
                     Key = booking.Id.ToString(),
                     Type = nameof(BookingCreated),
                     Payload = JsonSerializer.Serialize(createdPayload),
@@ -106,7 +111,7 @@ public class BookingService(
             if (!isAdmin && !isOwner)
                 throw new PermissionDeniedException($"User {userId} is not allowed to cancel booking {bookingId}");
 
-            var outbox = GetBookingCancelledOutboxMessage(booking.Id, booking.UserId, booking.EventId, ct);
+            var outbox = GetBookingCancelledOutboxMessage(booking, ct);
 
             await bookingRepository.CancelBookingAsync(bookingId, outbox, ct);
         }
@@ -127,7 +132,7 @@ public class BookingService(
 
             foreach (var booking in bookings)
             {
-                var outbox = GetBookingCancelledOutboxMessage(booking.Id, booking.UserId, booking.EventId, ct);
+                var outbox = GetBookingCancelledOutboxMessage(booking, ct);
 
                 await bookingRepository.CancelBookingAsync(booking.Id, outbox, ct);
             }
@@ -180,20 +185,20 @@ public class BookingService(
 
     public Task SaveChangesAsync(CancellationToken ct = default) => bookingRepository.SaveChangesAsync(ct);
 
-    private OutboxMessage GetBookingCancelledOutboxMessage(Guid bookingId, Guid userId, Guid eventId,
-        CancellationToken ct = default)
+    private OutboxMessage GetBookingCancelledOutboxMessage(Booking booking, CancellationToken ct = default)
     {
         var cancelPayload = new BookingCancelled
         {
-            BookingId = bookingId,
-            UserId = userId,
-            EventId = eventId,
+            BookingId = booking.Id,
+            UserId = booking.UserId,
+            EventId = booking.EventId,
+            SeatCount = booking.SeatCount,
         };
 
         var outbox = new OutboxMessage
         {
-            Topic = Topic,
-            Key = bookingId.ToString(),
+            Topic = KafkaTopics.Bookings,
+            Key = booking.Id.ToString(),
             Type = nameof(BookingCancelled),
             Payload = JsonSerializer.Serialize(cancelPayload),
         };

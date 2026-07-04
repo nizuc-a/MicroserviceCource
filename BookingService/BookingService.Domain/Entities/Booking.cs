@@ -5,10 +5,11 @@ namespace BookingService.Domain.Entities;
 
 public class Booking
 {
-    public Booking(Guid eventId,  Guid userId)
+    public Booking(Guid eventId, Guid userId, int seatCount = 1)
     {
         EventId = eventId;
         UserId = userId;
+        SeatCount = seatCount;
     }
     
     public Guid Id { get; set; } =  Guid.NewGuid();
@@ -16,6 +17,8 @@ public class Booking
     public Guid UserId { get; set; }
     
     public Guid EventId { get; set; }
+
+    public int SeatCount { get; set; } = 1;
     
     public BookingStatus Status { get; set; } = BookingStatus.Pending;
 

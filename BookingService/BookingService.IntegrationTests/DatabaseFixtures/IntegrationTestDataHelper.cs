@@ -2,6 +2,7 @@ using System.Text.Json;
 using BookingService.Domain.Entities;
 using Shared.Domain.Contracts.Booking;
 using Shared.Domain.Entities;
+using Shared.Domain.Kafka;
 
 namespace BookingService.IntegrationTests.DatabaseFixtures;
 
@@ -14,11 +15,13 @@ public static class IntegrationTestDataHelper
             BookingId = booking.Id,
             UserId = booking.UserId,
             EventId = booking.EventId,
+            SeatCount = booking.SeatCount,
+            CreatedAt = booking.CreatedAt,
         };
 
         return new OutboxMessage
         {
-            Topic = "bookings",
+            Topic = KafkaTopics.Bookings,
             Key = booking.Id.ToString(),
             Type = nameof(BookingCreated),
             Payload = JsonSerializer.Serialize(payload),
@@ -36,7 +39,7 @@ public static class IntegrationTestDataHelper
 
         return new OutboxMessage
         {
-            Topic = "bookings",
+            Topic = KafkaTopics.Bookings,
             Key = booking.Id.ToString(),
             Type = nameof(BookingCancelled),
             Payload = JsonSerializer.Serialize(payload),

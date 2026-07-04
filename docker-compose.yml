@@ -101,6 +101,59 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # ─────────────────────────── Микросервисы ───────────────────────────
+  users-service:
+    build:
+      context: .
+      dockerfile: UserService/UserService.Api/Dockerfile
+    container_name: eventapi-users-service
+    ports:
+      - "5134:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=users-db;Port=5432;Database=users;Username=postgres;Password=postgres"
+      Kafka__BootstrapServers: "kafka:29092"
+    depends_on:
+      users-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  events-service:
+    build:
+      context: .
+      dockerfile: EventService/EventService.Api/Dockerfile
+    container_name: eventapi-events-service
+    ports:
+      - "5191:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=events-db;Port=5432;Database=events;Username=postgres;Password=postgres"
+      Kafka__BootstrapServers: "kafka:29092"
+    depends_on:
+      events-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  bookings-service:
+    build:
+      context: .
+      dockerfile: BookingService/BookingService.Api/Dockerfile
+    container_name: eventapi-bookings-service
+    ports:
+      - "5099:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=bookings-db;Port=5432;Database=bookings;Username=postgres;Password=postgres"
+      Kafka__BootstrapServers: "kafka:29092"
+    depends_on:
+      bookings-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
 volumes:
   users-db-data:
   events-db-data:

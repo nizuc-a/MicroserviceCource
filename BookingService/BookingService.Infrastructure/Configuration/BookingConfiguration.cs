@@ -22,6 +22,12 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsRequired();
         
         builder.HasIndex(b => b.EventId);
+
+        builder.Property(b => b.SeatCount)
+            .HasColumnName("seat_count")
+            .IsRequired();
+        
+        builder.HasCheckConstraint("CK_bookings_seat_count", "\"seat_count\" > 0");
         
         builder.Property(b => b.UserId)
             .HasColumnName("user_id")

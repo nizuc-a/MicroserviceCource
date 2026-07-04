@@ -5,6 +5,7 @@ using EventService.IntegrationTests.DatabaseFixtures;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Contracts.Event;
 using Shared.Domain.Entities;
+using Shared.Domain.Kafka;
 using Xunit;
 
 namespace EventService.IntegrationTests;
@@ -310,7 +311,7 @@ public class EventRepositoryTest
 
         var outboxMessage = new OutboxMessage
         {
-            Topic = "events",
+            Topic = KafkaTopics.Events,
             Key = eventEntity.Id.ToString(),
             Type = nameof(EventDeleted),
             Payload = $"{{\"EventId\":\"{eventEntity.Id}\"}}"

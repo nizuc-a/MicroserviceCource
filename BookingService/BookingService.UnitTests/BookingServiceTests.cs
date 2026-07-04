@@ -61,6 +61,40 @@ public class BookingServiceTests
     }
 
     [Fact]
+    public async Task CreateBooking_WithSeatCount_PublishesPayloadWithSeatCount()
+    {
+        var eventId = EventGuids[0];
+        var userId = UserGuids[0];
+        const int seatCount = 3;
+
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var booking = await bookingService.CreateBookingAsync(eventId, userId, seatCount);
+
+        Assert.Equal(seatCount, booking.SeatCount);
+
+        var outbox = await dbContext.OutboxMessages.FirstOrDefaultAsync(m => m.Key == booking.Id.ToString());
+        Assert.NotNull(outbox);
+
+        var payload = System.Text.Json.JsonSerializer.Deserialize<BookingCreated>(outbox.Payload);
+        Assert.NotNull(payload);
+        Assert.Equal(seatCount, payload.SeatCount);
+        Assert.True(payload.CreatedAt <= DateTime.UtcNow);
+    }
+
+    [Fact]
+    public async Task CreateBooking_InvalidSeatCount_Throws()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            bookingService.CreateBookingAsync(EventGuids[0], UserGuids[0], seatCount: 0));
+    }
+
+    [Fact]
     public async Task CreateBooking_ActiveBookingLimitExceededException()
     {
         var userId = UserGuids[0];

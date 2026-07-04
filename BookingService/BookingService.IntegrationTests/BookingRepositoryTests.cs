@@ -6,6 +6,7 @@ using AppBookingService = BookingService.Application.Services.BookingService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shared.Domain.Contracts.Booking;
+using Shared.Domain.Kafka;
 using Shared.Domain.Settings;
 using Xunit;
 
@@ -222,7 +223,7 @@ public class BookingRepositoryTests
         var repository = new BookingRepository(context);
         var outbox = new Shared.Domain.Entities.OutboxMessage
         {
-            Topic = "bookings",
+            Topic = KafkaTopics.Bookings,
             Key = Guid.NewGuid().ToString(),
             Type = nameof(BookingCancelled),
             Payload = "{}"

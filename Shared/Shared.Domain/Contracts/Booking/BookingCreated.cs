@@ -2,7 +2,9 @@ namespace Shared.Domain.Contracts.Booking;
 
 public class BookingCreated
 {
-    public Guid UserId { get; set; }
+    public Guid BookingId { get; set; }
     public Guid EventId { get; set; }
-    public Guid BookingId { get; set; } 
+    public Guid UserId { get; set; }
+    public int SeatCount { get; set; } = 1;
+    public DateTime CreatedAt { get; set; }
 }

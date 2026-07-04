@@ -36,8 +36,9 @@ public class MigrationTests
 
         var appliedMigrations = (await context.Database.GetAppliedMigrationsAsync()).ToList();
 
-        Assert.Single(appliedMigrations);
+        Assert.Equal(2, appliedMigrations.Count);
         Assert.Equal("20260704090827_InitialCreate", appliedMigrations[0]);
+        Assert.Equal("20260704201812_AddSeatCountToBooking", appliedMigrations[1]);
     }
 
     [Fact]
@@ -116,5 +117,6 @@ public class MigrationTests
             .ToListAsync();
 
         Assert.Contains(constraintNames, c => c.ToLower().Contains("createdbeforeprocessed"));
+        Assert.Contains(constraintNames, c => c.ToLower().Contains("seat_count"));
     }
 }
