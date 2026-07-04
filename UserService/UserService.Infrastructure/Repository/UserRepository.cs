@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Enums;
 using UserService.Application.Abstractions.Repositories;
 using UserService.Domain.Entities;
+using UserService.Domain.Exceptions;
 using UserService.Infrastructure.DbContext;
 
 namespace UserService.Infrastructure.Repository;
@@ -24,5 +25,14 @@ public class UserRepository(AppDbContext context) : IUserRepository
         await context.Users.AddAsync(user, ct);
         await context.SaveChangesAsync(ct);
         return user;
+    }
+
+    public async Task AddBookingAsync(Guid userId, Guid bookingId, CancellationToken ct = default)
+    {
+        var user = await GetUserByIdAsync(userId, ct)
+                   ?? throw new UserNotFoundException($"User {userId} not found");
+
+        user.AddBooking(bookingId);
+        await context.SaveChangesAsync(ct);
     }
 }

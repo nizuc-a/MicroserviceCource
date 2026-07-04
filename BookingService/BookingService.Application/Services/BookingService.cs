@@ -43,14 +43,6 @@ public class BookingService(
 
             try
             {
-                //TODO: Слушать отмену брони 
-
-                // if (eventEntity.StartAt <= DateTime.UtcNow)
-                //     throw new EventExpiredException("Event has already started");
-                //
-                // if (!eventEntity.TryReserveSeats())
-                //     throw new NoAvailableSeatsException("No available seats for this event");
-
                 var booking = new Booking(eventId, userId);
 
                 var createdPayload = new BookingCreated

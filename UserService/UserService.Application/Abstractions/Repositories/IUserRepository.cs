@@ -10,4 +10,6 @@ public interface IUserRepository
     Task<User?> GetUserByLoginAsync(string login, CancellationToken ct = default);
     
     Task<User> RegisterAsync(string login, string password, UserRole role, CancellationToken ct = default);
+
+    Task AddBookingAsync(Guid userId, Guid bookingId, CancellationToken ct = default);
 }

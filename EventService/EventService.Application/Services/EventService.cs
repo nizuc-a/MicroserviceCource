@@ -108,6 +108,8 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
             if (!result.TryReserveSeats())
                 throw new NoAvailableSeatsException("No available seats for this event");
+            
+            result.AddBooking(bookingId);
 
             await PublishBookingConfirmedAsync(eventId, bookingId, userId, ct);
         }

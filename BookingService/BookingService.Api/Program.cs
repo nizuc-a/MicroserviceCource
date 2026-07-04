@@ -61,9 +61,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-//Todo: Добавить сервис по обработке сообщений
-//builder.Services.AddHostedService<BookingBackgroundService>();
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

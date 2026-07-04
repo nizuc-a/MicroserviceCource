@@ -22,9 +22,6 @@ public class BookingController(IBookingService bookingService) : ControllerBase
         
         Booking newBooking = await bookingService.CreateBookingAsync(eventId, userId, ct);
 
-        //Todo: Добавить в очередь
-        // bookingTaskQueue.Enqueue(newBooking);
-
         return Accepted($"/bookings/{newBooking.Id}", new
         {
             bookingId = newBooking.Id,

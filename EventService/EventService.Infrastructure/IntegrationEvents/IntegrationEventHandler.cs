@@ -36,6 +36,7 @@ public class IntegrationEventHandler(IEventService eventService) : IIntegrationE
         var entity = await eventService.GetById(booking.EventId, ct);
         
         entity.ReleaseSeats();
+        entity.RemoveBooking(booking.BookingId);
         
         await eventService.SaveChangesAsync(ct);
     }

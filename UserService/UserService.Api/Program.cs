@@ -22,12 +22,16 @@ builder.Services.AddAuthorization();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
+builder.Services.AddApplicationHostedServices();
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));
 
 builder.Services.Configure<UserSettings>(
     builder.Configuration.GetSection(UserSettings.SectionName));
+
+builder.Services.Configure<KafkaSettings>(
+    builder.Configuration.GetSection(KafkaSettings.SectionName));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -55,9 +59,6 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference(schemeId, document)] = []
     });
 });
-
-//Todo: Добавить сервис по обработке сообщений
-//builder.Services.AddHostedService<BookingBackgroundService>();
 
 var app = builder.Build();
 
