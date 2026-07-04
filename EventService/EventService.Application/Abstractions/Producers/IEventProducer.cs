@@ -2,9 +2,11 @@ namespace EventService.Application.Abstractions.Producers;
 
 public interface IEventProducer
 {
-    Task PublishAsync<T>(
+    Task PublishAsync(
         string topic,
         string key,
-        T message,
+        string type,
+        string messageId,
+        string payload,
         CancellationToken ct = default);
 }

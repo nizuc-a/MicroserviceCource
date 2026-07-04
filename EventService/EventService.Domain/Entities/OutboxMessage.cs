@@ -6,7 +6,7 @@ public class OutboxMessage
 
     public string Topic { get; set; } = string.Empty;
 
-    public string? Key { get; set; }
+    public string Key { get; set; }
 
     public string Type { get; set; } = string.Empty;
 

@@ -20,6 +20,7 @@ var jwtSettings = builder.Configuration
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
+builder.Services.AddApplicationHostedServices();
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));

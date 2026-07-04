@@ -1,7 +1,11 @@
 namespace Shared.Domain.Contracts.Event;
 
-public class EventDeleted
+public record EventDeleted
 {
-    public Guid Id { get; set; }
-    public Guid EventId { get; set; }
+    public Guid EventId { get; init; }
+
+    public EventDeleted(Guid eventId)
+    {
+        EventId = eventId;
+    }
 }

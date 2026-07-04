@@ -1,3 +1,4 @@
+using EventService.Api.BackgroundServices;
 using EventService.Api.Middleware;
 using EventService.Api.Services;
 using EventService.Application;
@@ -20,6 +21,8 @@ var jwtSettings = builder.Configuration
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
+
+builder.Services.AddHostedService<OutboxProcessor>();
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName));

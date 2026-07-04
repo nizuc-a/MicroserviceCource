@@ -1,8 +1,10 @@
-﻿using EventService.Application.Abstractions.Repositories;
+﻿using System.Text.Json;
+using EventService.Application.Abstractions.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Application.DTOs.Event;
 using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
+using Shared.Domain.Contracts.Event;
 
 namespace EventService.Application.Services;
 
@@ -61,9 +63,20 @@ public class EventService(IEventRepository eventRepository) : IEventService
         await eventRepository.UpdateEvent(entity, ct);
     }
 
-    public async Task DeleteEventById(Guid id, CancellationToken ct = default)
+    public async Task DeleteEventById(Guid eventId, CancellationToken ct = default)
     {
-        await eventRepository.DeleteEventByIdAsync(id, ct);
+        var payloadRaw = new EventDeleted(eventId);
+        
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Topic = "events",
+            Key = eventId.ToString(),
+            Type = nameof(EventDeleted),
+            Payload = JsonSerializer.Serialize(payloadRaw)
+        };
+        
+        await eventRepository.DeleteEventByIdAsync(eventId, outboxMessage, ct);
     }
     
     public Task SaveChangesAsync(CancellationToken ct = default) =>  eventRepository.SaveChangesAsync(ct);

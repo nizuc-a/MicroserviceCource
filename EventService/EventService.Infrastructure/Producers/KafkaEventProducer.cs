@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Confluent.Kafka;
 using EventService.Application.Abstractions.Producers;
 using Microsoft.Extensions.Logging;
@@ -22,13 +21,13 @@ public class KafkaEventProducer : IEventProducer, IDisposable
             Acks = Acks.All,
             EnableIdempotence = true
         };
-        
-        _producer =  new ProducerBuilder<string, string>(config).Build();
+
+        _producer = new ProducerBuilder<string, string>(config).Build();
     }
-    public async Task PublishAsync<T>(string topic, string key, T message, CancellationToken ct = default)
+
+    public async Task PublishAsync(string topic, string key, string type, string messageId, string payload,
+        CancellationToken ct = default)
     {
-        var payload = JsonSerializer.Serialize(message);
-        
         try
         {
             var result = await _producer.ProduceAsync(
@@ -36,10 +35,15 @@ public class KafkaEventProducer : IEventProducer, IDisposable
                 new Message<string, string>
                 {
                     Key = key,
-                    Value = payload
+                    Value = payload,
+                    Headers = new Headers
+                    {
+                        { "event-type", System.Text.Encoding.UTF8.GetBytes(type) },
+                        { "message-id", System.Text.Encoding.UTF8.GetBytes(messageId) },
+                    }
                 },
                 ct);
-            
+
             _logger.LogInformation(
                 "Published to {Topic}, partition {Partition}, offset {Offset}",
                 result.Topic, result.Partition.Value, result.Offset.Value);

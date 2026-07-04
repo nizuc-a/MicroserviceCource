@@ -104,5 +104,28 @@ public class BookingService(
         }
     }
 
+    public async Task CancelBookingsByEventIdAsync(Guid eventId, CancellationToken ct = default)
+    {
+        var  semaphore = _eventLocks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync(ct);
+
+        try
+        {
+            var bookings = await bookingRepository.GetActiveBookingsByEventIdAsync(eventId, ct);
+
+            foreach (var booking in bookings)
+            {
+                booking.Cancel();
+            }
+
+            await bookingRepository.SaveChangesAsync(ct);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+        
+    }
+
     public Task SaveChangesAsync(CancellationToken ct = default) => bookingRepository.SaveChangesAsync(ct);
 }

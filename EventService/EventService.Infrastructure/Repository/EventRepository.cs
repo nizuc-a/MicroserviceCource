@@ -48,13 +48,14 @@ public class EventRepository(AppDbContext context) : IEventRepository
         await context.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteEventByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteEventByIdAsync(Guid id, OutboxMessage message, CancellationToken ct = default)
     {
         var entity = await GetByIdAsync(id, ct);
         if(entity == null)
             return;
         
         context.Events.Remove(entity);
+        await context.OutboxMessages.AddAsync(message, ct);
         await context.SaveChangesAsync(ct);
     }
     

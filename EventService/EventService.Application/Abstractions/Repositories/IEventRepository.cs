@@ -13,7 +13,7 @@ public interface IEventRepository
 
     Task UpdateEvent(Event data, CancellationToken ct = default);
 
-    Task DeleteEventByIdAsync(Guid id, CancellationToken ct = default);
+    Task DeleteEventByIdAsync(Guid id, OutboxMessage message,  CancellationToken ct = default);
 
     public Task SaveChangesAsync(CancellationToken ct = default);
 }

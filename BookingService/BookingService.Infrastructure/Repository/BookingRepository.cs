@@ -22,6 +22,13 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
         return booking;
     }
 
+    public Task<List<Booking>> GetActiveBookingsByEventIdAsync(Guid eventId, CancellationToken ct = default)
+    {
+        return context.Bookings.Where(x => x.EventId == eventId)
+            .Where(x=> x.Status == BookingStatus.Pending || x.Status == BookingStatus.Confirmed)
+            .ToListAsync(ct);
+    }
+
     public async Task<List<Booking>> GetBookingsByUserId(Guid userId, CancellationToken ct = default)
     {
         var bookings = context.Bookings
