@@ -1,8 +1,8 @@
 using System.Text.Json;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Application.IntegrationEvents;
-using BookingService.Domain.Entities;
 using Shared.Domain.Contracts.Event;
+using Shared.Domain.Entities;
 
 namespace BookingService.Infrastructure.IntegrationEvents;
 

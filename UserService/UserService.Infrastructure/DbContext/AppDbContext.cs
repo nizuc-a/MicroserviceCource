@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Entities;
 using UserService.Domain.Entities;
 
 namespace UserService.Infrastructure.DbContext;

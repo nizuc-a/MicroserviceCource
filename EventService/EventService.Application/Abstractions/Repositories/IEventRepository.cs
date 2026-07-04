@@ -1,4 +1,5 @@
 using EventService.Domain.Entities;
+using Shared.Domain.Entities;
 
 namespace EventService.Application.Abstractions.Repositories;
 

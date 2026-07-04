@@ -1,6 +1,6 @@
-using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Shared.Domain.Entities;
 
 namespace EventService.Infrastructure.Configurations;
 

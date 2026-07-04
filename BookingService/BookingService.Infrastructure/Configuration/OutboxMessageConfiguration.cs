@@ -1,6 +1,6 @@
-using BookingService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Shared.Domain.Entities;
 
 namespace BookingService.Infrastructure.Configuration;
 

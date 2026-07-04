@@ -1,5 +1,6 @@
 ﻿using BookingService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Entities;
 
 namespace BookingService.Infrastructure.DbContext;
 

@@ -1,5 +1,7 @@
+using BookingService.Application.Abstractions.Producers;
 using BookingService.Application.Abstractions.Repository;
 using BookingService.Infrastructure.DbContext;
+using BookingService.Infrastructure.Producers;
 using BookingService.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +17,8 @@ public static class InfrastructureDependencyInjection
             options.UseNpgsql(connectionString));
         
         services.AddScoped<IBookingRepository, BookingRepository>();
+        
+        services.AddSingleton<IEventProducer, KafkaEventProducer>();
 
         return services;
     }

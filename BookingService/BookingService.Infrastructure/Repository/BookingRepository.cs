@@ -3,6 +3,7 @@ using BookingService.Domain.Entities;
 using BookingService.Domain.Enums;
 using BookingService.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Entities;
 
 namespace BookingService.Infrastructure.Repository;
 
@@ -46,7 +47,7 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
                 ct);
     }
 
-    public async Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default)
+    public async Task CancelBookingAsync(Guid bookingId, OutboxMessage outbox, CancellationToken ct = default)
     {
         var booking = context.Bookings
             .FirstOrDefault(x => x.Id == bookingId);
@@ -55,6 +56,8 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             return;
         
         booking.Cancel();
+        
+        await context.OutboxMessages.AddAsync(outbox, ct);
         
         await SaveChangesAsync(ct);
     }

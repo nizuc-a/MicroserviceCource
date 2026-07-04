@@ -1,4 +1,5 @@
 using BookingService.Domain.Entities;
+using Shared.Domain.Entities;
 
 namespace BookingService.Application.Abstractions.Repository;
 
@@ -14,7 +15,7 @@ public interface IBookingRepository
 
     Task<int> CountActiveBookingsByUserIdAsync(Guid userId, CancellationToken ct = default);
     
-    Task CancelBookingAsync(Guid bookingId, CancellationToken ct = default);
+    Task CancelBookingAsync(Guid bookingId, OutboxMessage outbox, CancellationToken ct = default);
     
     Task SaveChangesAsync(CancellationToken ct = default);
 }

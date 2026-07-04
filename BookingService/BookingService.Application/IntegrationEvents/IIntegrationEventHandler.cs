@@ -1,4 +1,5 @@
 using BookingService.Domain.Entities;
+using Shared.Domain.Entities;
 
 namespace BookingService.Application.IntegrationEvents;
 

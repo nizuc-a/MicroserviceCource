@@ -4,5 +4,5 @@ public class BookingCreated
 {
     public Guid UserId { get; set; }
     public Guid EventId { get; set; }
-    public Guid BookingId { get; set; }
+    public Guid BookingId { get; set; } 
 }

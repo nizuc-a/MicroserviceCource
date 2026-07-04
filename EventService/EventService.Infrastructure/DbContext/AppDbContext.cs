@@ -1,5 +1,6 @@
 ﻿using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Entities;
 
 namespace EventService.Infrastructure.DbContext;
 

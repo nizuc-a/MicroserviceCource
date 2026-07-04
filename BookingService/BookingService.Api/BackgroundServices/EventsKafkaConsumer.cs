@@ -4,6 +4,7 @@ using BookingService.Infrastructure.DbContext;
 using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Shared.Domain.Entities;
 using Shared.Domain.Settings;
 
 namespace BookingService.Api.BackgroundServices;

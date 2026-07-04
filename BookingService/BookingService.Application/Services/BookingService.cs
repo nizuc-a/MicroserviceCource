@@ -1,9 +1,12 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using BookingService.Application.Abstractions.Repository;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.Entities;
 using BookingService.Domain.Exceptions;
 using Microsoft.Extensions.Options;
+using Shared.Domain.Contracts.Booking;
+using Shared.Domain.Entities;
 using Shared.Domain.Settings;
 
 namespace BookingService.Application.Services;
@@ -15,6 +18,7 @@ public class BookingService(
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _eventLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _userLocks = new();
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _bookingLocks = new();
+    private const string Topic = "bookings";
 
     public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken ct = default)
     {
@@ -27,7 +31,7 @@ public class BookingService(
             var maxActiveBookingsPerUser = userSettings.Value.MaxActiveBookingsPerUser;
 
             var activeBookingsCount = await bookingRepository.CountActiveBookingsByUserIdAsync(userId, ct);
-            
+
             if (activeBookingsCount >= maxActiveBookingsPerUser)
                 throw new ActiveBookingLimitExceededException(
                     $"User has reached the maximum limit of {maxActiveBookingsPerUser} active bookings");
@@ -39,7 +43,7 @@ public class BookingService(
             try
             {
                 //TODO: Слушать отмену брони 
-                
+
                 // if (eventEntity.StartAt <= DateTime.UtcNow)
                 //     throw new EventExpiredException("Event has already started");
                 //
@@ -94,9 +98,9 @@ public class BookingService(
             if (!isAdmin && !isOwner)
                 throw new PermissionDeniedException($"User {userId} is not allowed to cancel booking {bookingId}");
 
-            await bookingRepository.CancelBookingAsync(bookingId, ct);
-            
-            //TODO: Послать сигнал об отмене брони
+            var outbox = GetBookingCancelledOutboxMessage(booking.Id, booking.UserId, booking.EventId, ct);
+
+            await bookingRepository.CancelBookingAsync(bookingId, outbox, ct);
         }
         finally
         {
@@ -106,7 +110,7 @@ public class BookingService(
 
     public async Task CancelBookingsByEventIdAsync(Guid eventId, CancellationToken ct = default)
     {
-        var  semaphore = _eventLocks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
+        var semaphore = _eventLocks.GetOrAdd(eventId, _ => new SemaphoreSlim(1, 1));
         await semaphore.WaitAsync(ct);
 
         try
@@ -115,17 +119,36 @@ public class BookingService(
 
             foreach (var booking in bookings)
             {
-                booking.Cancel();
-            }
+                var outbox = GetBookingCancelledOutboxMessage(booking.Id, booking.UserId, booking.EventId, ct);
 
-            await bookingRepository.SaveChangesAsync(ct);
+                await bookingRepository.CancelBookingAsync(booking.Id, outbox, ct);
+            }
         }
         finally
         {
             semaphore.Release();
         }
-        
     }
 
     public Task SaveChangesAsync(CancellationToken ct = default) => bookingRepository.SaveChangesAsync(ct);
+
+    private OutboxMessage GetBookingCancelledOutboxMessage(Guid bookingId, Guid userId, Guid eventId, CancellationToken ct = default)
+    {
+        var cancelPayload = new BookingCancelled
+        {
+            BookingId = bookingId,
+            UserId = userId,
+            EventId = eventId,
+        };
+
+        var outbox = new OutboxMessage
+        {
+            Topic = Topic,
+            Key = bookingId.ToString(),
+            Type = nameof(BookingCancelled),
+            Payload = JsonSerializer.Serialize(cancelPayload),
+        };
+        
+        return outbox;
+    }
 }

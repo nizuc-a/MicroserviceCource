@@ -5,11 +5,14 @@ using EventService.Application.DTOs.Event;
 using EventService.Application.DTOs.Pagination;
 using EventService.Domain.Entities;
 using Shared.Domain.Contracts.Event;
+using Shared.Domain.Entities;
 
 namespace EventService.Application.Services;
 
 public class EventService(IEventRepository eventRepository) : IEventService
 {
+    private const string Topic = "events";
+
     public async Task<PaginatedResult<Event>> GetAll(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
@@ -69,8 +72,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
         
         var outboxMessage = new OutboxMessage
         {
-            Id = Guid.NewGuid(),
-            Topic = "events",
+            Topic = Topic,
             Key = eventId.ToString(),
             Type = nameof(EventDeleted),
             Payload = JsonSerializer.Serialize(payloadRaw)
