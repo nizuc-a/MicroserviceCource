@@ -1,4 +1,3 @@
-using EventService.Api.BackgroundServices;
 using EventService.Api.Middleware;
 using EventService.Api.Services;
 using EventService.Application;
@@ -25,13 +24,9 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(connectionString);
 builder.Services.AddJwtAuthentication(jwtSettings);
 
-builder.Services.AddHostedService<OutboxProcessor>();
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
-builder.Services.Configure<JwtSettings>(
-    builder.Configuration.GetSection(JwtSettings.SectionName));
-
-builder.Services.Configure<UserSettings>(
-    builder.Configuration.GetSection(UserSettings.SectionName));
+builder.Services.Configure<UserSettings>(builder.Configuration.GetSection(UserSettings.SectionName));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -59,9 +54,6 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference(schemeId, document)] = []
     });
 });
-
-//Todo: Сделать слушателя
-//builder.Services.AddHostedService<BookingBackgroundService>();
 
 var app = builder.Build();
 

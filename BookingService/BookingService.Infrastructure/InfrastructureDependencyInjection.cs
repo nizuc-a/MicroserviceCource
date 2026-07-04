@@ -21,7 +21,6 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IIntegrationEventHandler, IntegrationEventHandler>();
         
-        
         services.AddSingleton<IEventProducer, KafkaEventProducer>();
 
         return services;
