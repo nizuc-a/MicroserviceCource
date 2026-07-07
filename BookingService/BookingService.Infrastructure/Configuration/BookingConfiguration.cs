@@ -1,0 +1,50 @@
+using BookingService.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace BookingService.Infrastructure.Configuration;
+
+public class BookingConfiguration : IEntityTypeConfiguration<Booking>
+{
+    public void Configure(EntityTypeBuilder<Booking> builder)
+    {
+        builder.ToTable("bookings",
+            t => { t.HasCheckConstraint("CK_bookings_CreatedBeforeProcessed", "\"created_at\" < \"processed_at\""); });
+
+        builder.HasKey(b => b.Id);
+        
+        builder.Property(e => e.Id)
+            .HasColumnName("id")
+            .ValueGeneratedNever();
+        
+        builder.Property(b => b.EventId)
+            .HasColumnName("event_id")
+            .IsRequired();
+        
+        builder.HasIndex(b => b.EventId);
+
+        builder.Property(b => b.SeatCount)
+            .HasColumnName("seat_count")
+            .IsRequired();
+        
+        builder.HasCheckConstraint("CK_bookings_seat_count", "\"seat_count\" > 0");
+        
+        builder.Property(b => b.UserId)
+            .HasColumnName("user_id")
+            .IsRequired();
+        
+        builder.HasIndex(b => b.UserId);
+
+        builder.Property(b => b.Status)
+            .HasColumnName("status")
+            .HasConversion<string>()
+            .IsRequired();
+
+        builder.Property(b => b.CreatedAt)
+            .HasColumnName("created_at")
+            .IsRequired();
+
+        builder.Property(b => b.ProcessedAt)
+            .HasColumnName("processed_at");
+    }
+}

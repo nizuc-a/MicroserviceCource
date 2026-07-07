@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Shared\Shared.Api\Shared.Api.csproj" />
+      <ProjectReference Include="..\..\Shared\Shared.Domain\Shared.Domain.csproj" />
+      <ProjectReference Include="..\EventService.Application\EventService.Application.csproj" />
+      <ProjectReference Include="..\EventService.Infrastructure\EventService.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>
