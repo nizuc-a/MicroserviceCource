@@ -1,5 +1,6 @@
 using EventService.Api.Services;
 using EventService.Application;
+using EventService.Domain.Settings;
 using EventService.Infrastructure;
 using Shared.Api;
 using Shared.Domain.Settings;
@@ -28,6 +29,10 @@ public static class ServiceCollectionExtensions
         services.AddApplicationHostedServices();
         services.AddSharedAppSettings(configuration);
         services.AddJwtBearerSwaggerGen("Event Service API");
+
+        services.AddRedis(configuration);
+        
+        services.Configure<RedisSettings>(configuration.GetSection(RedisSettings.SectionName));
 
         return services;
     }
