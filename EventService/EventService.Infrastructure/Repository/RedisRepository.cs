@@ -24,7 +24,7 @@ public class RedisRepository : ICacheRepository
         {
             await _redis.StringSetAsync(key, json, expiration);
         }
-        catch (RedisConnectionException ex)
+        catch (RedisException ex)
         {
             _logger.LogError(ex, "Ошибка записи сущности по ключу {Key} в Redis", key);
         }
@@ -36,7 +36,7 @@ public class RedisRepository : ICacheRepository
         {
             await _redis.KeyDeleteAsync(key);
         }
-        catch (RedisConnectionException ex)
+        catch (RedisException ex)
         {
             _logger.LogError(ex, "Ошибка удаления по ключу {Key} из Redis", key);
         }
@@ -55,7 +55,7 @@ public class RedisRepository : ICacheRepository
 
             return (true, result);
         }
-        catch (RedisConnectionException ex)
+        catch (RedisException ex)
         {
             _logger.LogError(ex, "Ошибка чтения по ключу {Key} из Redis", key);
             return (false, default);
