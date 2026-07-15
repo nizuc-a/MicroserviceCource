@@ -26,6 +26,13 @@ public interface IEventService
     Task<Event> AddEvent(AddEventDto data, CancellationToken ct = default);
 
     /// <summary>
+    /// Получить топ событий
+    /// </summary>
+    /// <param name="count">Количество событий</param>
+    /// <returns></returns>
+    Task<Event[]> GetTop(int count, CancellationToken ct = default);
+
+    /// <summary>
     /// Обновить событие.
     /// </summary>
     /// <param name="id">id обновляемой сущности</param>
@@ -39,6 +46,8 @@ public interface IEventService
     Task DeleteEventById(Guid eventId, CancellationToken ct = default);
     
     Task BookEvent(Guid eventId, Guid bookingId, Guid userId, int seatCount = 1, CancellationToken ct = default);
+
+    Task ReleaseBookingAsync(Guid eventId, Guid bookingId, int seatCount, CancellationToken ct = default);
 
     public Task SaveChangesAsync(CancellationToken ct = default);
 }
