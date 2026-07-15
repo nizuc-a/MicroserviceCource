@@ -31,7 +31,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var validEvent = new Event(
             "Корректное событие",
@@ -58,7 +58,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var invalidEvent1 = new Event(
             "Некорректное событие",
@@ -102,11 +102,11 @@ public class EventRepositoryTest
             Id = id
         };
 
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
         await repository.AddEventAsync(eventEntity);
 
         await using var verifyContext = CreateContext();
-        var verifyRepository = new EventRepository(verifyContext);
+        var verifyRepository = new EventRepository(verifyContext, new NullCacheRepository(), TestRedisSettings.Default);
 
         var verifyEntity = new Event("Тест2", "Описание2", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10)
         {
@@ -124,11 +124,11 @@ public class EventRepositoryTest
         await using var context = CreateContext();
         var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
 
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
         await repository.AddEventAsync(eventEntity);
 
         await using var verifyContext = CreateContext();
-        var verifyRepository = new EventRepository(verifyContext);
+        var verifyRepository = new EventRepository(verifyContext, new NullCacheRepository(), TestRedisSettings.Default);
 
         eventEntity.Title = "Тест2";
         eventEntity.Description = "Описание2";
@@ -136,7 +136,7 @@ public class EventRepositoryTest
         await verifyRepository.UpdateEvent(eventEntity);
 
         await using var verifyContext2 = CreateContext();
-        var verifyRepository2 = new EventRepository(verifyContext2);
+        var verifyRepository2 = new EventRepository(verifyContext2, new NullCacheRepository(), TestRedisSettings.Default);
 
         var result = await verifyRepository2.GetByIdAsync(eventEntity.Id);
 
@@ -152,7 +152,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var event1 = new Event("Событие 1", "Описание 1", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
         var event2 = new Event("Событие 2", "Описание 2", DateTime.UtcNow.AddDays(2), DateTime.UtcNow.AddDays(3), 20);
@@ -175,7 +175,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var event1 = new Event("Концерт", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
         var event2 = new Event("Выставка", "Описание", DateTime.UtcNow.AddDays(2), DateTime.UtcNow.AddDays(3), 20);
@@ -199,7 +199,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var baseDate = DateTime.UtcNow;
         var event1 = new Event("Событие 1", "", baseDate.AddDays(1), baseDate.AddDays(2), 10);
@@ -223,7 +223,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var baseDate = DateTime.UtcNow;
         var event1 = new Event("Событие 1", "", baseDate.AddDays(1), baseDate.AddDays(2), 10);
@@ -247,7 +247,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         for (int i = 1; i <= 15; i++)
         {
@@ -270,7 +270,7 @@ public class EventRepositoryTest
 
         // Arrange
         await using var context = CreateContext();
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
 
         var baseDate = DateTime.UtcNow;
         var event1 = new Event("Концерт Рок", "", baseDate.AddDays(1), baseDate.AddDays(2), 10);
@@ -303,11 +303,11 @@ public class EventRepositoryTest
         await using var context = CreateContext();
         var eventEntity = new Event("Тест", "Описание", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 10);
 
-        var repository = new EventRepository(context);
+        var repository = new EventRepository(context, new NullCacheRepository(), TestRedisSettings.Default);
         await repository.AddEventAsync(eventEntity);
 
         await using var verifyContext = CreateContext();
-        var verifyRepository = new EventRepository(verifyContext);
+        var verifyRepository = new EventRepository(verifyContext, new NullCacheRepository(), TestRedisSettings.Default);
 
         var outboxMessage = new OutboxMessage
         {
