@@ -14,6 +14,8 @@ public class IntegrationEventHandler(IEventService eventService) : IIntegrationE
         {
             nameof(BookingCancelled) => HandleBookingCancelled(message, ct),
             nameof(BookingCreated) => HandleBookingCreated(message, ct),
+            nameof(BookingRejected) => Task.CompletedTask,
+            nameof(BookingConfirmed) => Task.CompletedTask,
             _ => throw new InvalidOperationException($"Unknown event type: {message.Type}")
         };
         
@@ -33,11 +35,6 @@ public class IntegrationEventHandler(IEventService eventService) : IIntegrationE
         var booking = JsonSerializer.Deserialize<BookingCancelled>(message.Payload)
                      ?? throw new InvalidOperationException("Invalid BookingCancelled payload");
 
-        var entity = await eventService.GetById(booking.EventId, ct);
-        
-        entity.ReleaseSeats(booking.SeatCount);
-        entity.RemoveBooking(booking.BookingId);
-        
-        await eventService.SaveChangesAsync(ct);
+        await eventService.ReleaseBookingAsync(booking.EventId, booking.BookingId, booking.SeatCount, ct);
     }
 }
