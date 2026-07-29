@@ -1,6 +1,9 @@
 using BookingService.Api.Services;
 using BookingService.Application;
 using BookingService.Infrastructure;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shared.Api;
 using Shared.Domain.Settings;
 
@@ -28,6 +31,24 @@ public static class ServiceCollectionExtensions
         services.AddApplicationHostedServices();
         services.AddSharedAppSettings(configuration);
         services.AddJwtBearerSwaggerGen("Booking Service API");
+        
+        services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("BookingService"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddOtlpExporter(o => o.Endpoint = new Uri(configuration["Otlp:Endpoint"]!));
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter();
+            });
 
         return services;
     }

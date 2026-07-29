@@ -2,6 +2,9 @@ using EventService.Api.Services;
 using EventService.Application;
 using EventService.Domain.Settings;
 using EventService.Infrastructure;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shared.Api;
 using Shared.Domain.Settings;
 
@@ -31,8 +34,25 @@ public static class ServiceCollectionExtensions
         services.AddJwtBearerSwaggerGen("Event Service API");
 
         services.AddRedis(configuration);
-        
         services.Configure<RedisSettings>(configuration.GetSection(RedisSettings.SectionName));
+        
+        services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("EventService"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddOtlpExporter(o => o.Endpoint = new Uri(configuration["Otlp:Endpoint"]!));
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter();
+            });
 
         return services;
     }
