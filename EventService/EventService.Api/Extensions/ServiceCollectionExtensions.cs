@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
             .WithMetrics(metrics =>
             {
                 metrics
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("EventService"))
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddPrometheusExporter();

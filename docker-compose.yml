@@ -127,7 +127,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=users-db;Port=5432;Database=users;Username=postgres;Password=postgres"
       Kafka__BootstrapServers: "kafka:29092"
-      Otlp__Endpoint: "jaeger:4317"
+      Otlp__Endpoint: "http://jaeger:4317"
     depends_on:
       users-db:
         condition: service_healthy
@@ -146,7 +146,7 @@ services:
       ConnectionStrings__DefaultConnection: "Host=events-db;Port=5432;Database=events;Username=postgres;Password=postgres"
       Kafka__BootstrapServers: "kafka:29092"
       Redis__Host: "redis:6379"
-      Otlp__Endpoint: "jaeger:4317"
+      Otlp__Endpoint: "http://jaeger:4317"
     depends_on:
       events-db:
         condition: service_healthy
@@ -166,15 +166,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=bookings-db;Port=5432;Database=bookings;Username=postgres;Password=postgres"
       Kafka__BootstrapServers: "kafka:29092"
-      Otlp__Endpoint: "jaeger:4317"
+      Otlp__Endpoint: "http://jaeger:4317"
     depends_on:
       bookings-db:
         condition: service_healthy
       kafka:
         condition: service_healthy
-        
-    # ─────────────────────────── Метрики ───────────────────────────
-        
+
+  # ─────────────────────────── Метрики ───────────────────────────
   prometheus:
     image: prom/prometheus:v2.51.0
     container_name: eventapi-prometheus

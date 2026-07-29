@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
             .WithMetrics(metrics =>
             {
                 metrics
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("BookingService"))
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddPrometheusExporter();
