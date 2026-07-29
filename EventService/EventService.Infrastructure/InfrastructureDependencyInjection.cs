@@ -16,6 +16,7 @@ public static class InfrastructureDependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddScoped<ICacheRepository, RedisRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
 
         services.AddSingleton<IEventProducer, KafkaEventProducer>();

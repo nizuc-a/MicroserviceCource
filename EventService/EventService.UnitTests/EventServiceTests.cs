@@ -47,7 +47,8 @@ public class EventServiceTests
 
         SetupDbContext();
 
-        _eventService = new Application.Services.EventService(new EventRepository(_dbContext!));
+        _eventService = new Application.Services.EventService(
+            new EventRepository(_dbContext!, new NullCacheRepository(), TestRedisSettings.Default));
     }
 
     private void SetupDbContext()
@@ -181,8 +182,8 @@ public class EventServiceTests
         {
             Title = "Title",
             Description = "Description",
-            StartAt = DateTime.Now.AddMonths(-1),
-            EndAt = DateTime.Now.AddMonths(1),
+            StartAt = DateTime.UtcNow.AddMonths(1),
+            EndAt = DateTime.UtcNow.AddMonths(2),
             TotalSeats = 10
         };
 
@@ -202,8 +203,23 @@ public class EventServiceTests
         {
             Title = "Title",
             Description = "Description",
-            StartAt = DateTime.Now.AddMonths(1),
-            EndAt = DateTime.Now.AddMonths(-1),
+            StartAt = DateTime.UtcNow.AddMonths(1),
+            EndAt = DateTime.UtcNow.AddMonths(-1),
+        };
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.AddEvent(addEventDto));
+    }
+
+    [Fact]
+    public async Task AddEvent_PastStartAt_ThrowsArgumentOutOfRangeException()
+    {
+        var addEventDto = new AddEventDto()
+        {
+            Title = "Title",
+            Description = "Description",
+            StartAt = DateTime.UtcNow.AddMonths(-1),
+            EndAt = DateTime.UtcNow.AddMonths(1),
+            TotalSeats = 10
         };
 
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.AddEvent(addEventDto));
@@ -221,8 +237,8 @@ public class EventServiceTests
         {
             Title = "Title",
             Description = "Description",
-            StartAt = DateTime.Now.AddMonths(-1),
-            EndAt = DateTime.Now.AddMonths(1),
+            StartAt = DateTime.UtcNow.AddMonths(1),
+            EndAt = DateTime.UtcNow.AddMonths(2),
             TotalSeats = 3,
             AvailableSeats = 2
         };
@@ -248,8 +264,8 @@ public class EventServiceTests
         {
             Title = "Title",
             Description = "Description",
-            StartAt = DateTime.Now.AddMonths(1),
-            EndAt = DateTime.Now.AddMonths(-1),
+            StartAt = DateTime.UtcNow.AddMonths(1),
+            EndAt = DateTime.UtcNow.AddMonths(-1),
         };
 
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await _eventService.UpdateEvent(id, dto));
@@ -263,8 +279,8 @@ public class EventServiceTests
         {
             Title = "Title",
             Description = "Description",
-            StartAt = DateTime.Now.AddMonths(-1),
-            EndAt = DateTime.Now.AddMonths(1),
+            StartAt = DateTime.UtcNow.AddMonths(1),
+            EndAt = DateTime.UtcNow.AddMonths(2),
             AvailableSeats = 10,
             TotalSeats = 10
         };

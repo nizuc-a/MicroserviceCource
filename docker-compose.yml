@@ -49,6 +49,19 @@ services:
         kafka-topics --bootstrap-server kafka:29092 --create --topic events --partitions 1 --replication-factor 1 --if-not-exists
         kafka-topics --bootstrap-server kafka:29092 --create --topic bookings --partitions 1 --replication-factor 1 --if-not-exists
     restart: "no"
+    
+  # ─────────────────────────── Редис ───────────────────────────
+    
+  redis:
+    image: redis:7.2-alpine
+    container_name: eventapi-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # ─────────────────────────── Базы данных (по одной на сервис) ───────────────────────────
   users-db:
@@ -131,10 +144,13 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=events-db;Port=5432;Database=events;Username=postgres;Password=postgres"
       Kafka__BootstrapServers: "kafka:29092"
+      Redis__Host: "redis:6379"
     depends_on:
       events-db:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   bookings-service:

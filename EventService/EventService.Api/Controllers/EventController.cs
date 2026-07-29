@@ -26,9 +26,17 @@ public class EventsController(IEventService eventService) : ControllerBase
         return Ok(events);
     }
 
+    [HttpGet("top")]
+    [AllowAnonymous]
+    public async Task<ActionResult<Event[]>> GetTopEvents(CancellationToken ct = default)
+    {
+        var value = await eventService.GetTop(10, ct);
+        return Ok(value);
+    }
+
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Admin,User")]
-    public async Task<ActionResult<Event>> GetEventById(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<Event>> GetEventById([FromRoute]Guid id, CancellationToken ct = default)
     {
         var value = await eventService.GetById(id, ct);
 

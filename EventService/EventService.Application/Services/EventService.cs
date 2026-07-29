@@ -41,10 +41,20 @@ public class EventService(IEventRepository eventRepository) : IEventService
         return entity ?? throw new KeyNotFoundException($"Event with Id {id} not found");
     }
 
+    public async Task<Event[]> GetTop(int count, CancellationToken ct = default)
+    {
+        if (count <= 0)
+            throw new ArgumentOutOfRangeException(nameof(count), "Количество событий для топа должно быть больше 0");
+        
+        var top = await eventRepository.GetTop(count, ct);
+
+        return top;
+    }
+
     public async Task<Event> AddEvent(AddEventDto dto, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(dto.StartAt, dto.EndAt);
-
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(dto.StartAt, DateTime.UtcNow);
         ArgumentOutOfRangeException.ThrowIfLessThan(dto.TotalSeats, 1);
 
         Event data = new Event(dto.Title, dto.Description ?? "", dto.StartAt, dto.EndAt, dto.TotalSeats);
@@ -57,14 +67,15 @@ public class EventService(IEventRepository eventRepository) : IEventService
     public async Task UpdateEvent(Guid id, UpdateEventDto data, CancellationToken ct = default)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThan(data.StartAt, data.EndAt);
-
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(data.StartAt, DateTime.UtcNow);
         ArgumentOutOfRangeException.ThrowIfLessThan(data.TotalSeats, 1);
 
         ArgumentOutOfRangeException.ThrowIfGreaterThan(data.AvailableSeats, data.TotalSeats);
         ArgumentOutOfRangeException.ThrowIfLessThan(data.AvailableSeats, 0);
 
 
-        var entity = await GetById(id, ct);
+        var entity = await eventRepository.GetTrackedByIdAsync(id, ct)
+                     ?? throw new KeyNotFoundException($"Event with Id {id} not found");
 
         entity.Update(data.Title, data.Description ?? "", data.StartAt, data.EndAt, data.TotalSeats,
             data.AvailableSeats);
@@ -97,7 +108,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
         try
         {
-            var result = await eventRepository.GetByIdAsync(eventId, ct);
+            var result = await eventRepository.GetTrackedByIdAsync(eventId, ct);
 
             if (result == null)
             {
@@ -110,10 +121,11 @@ public class EventService(IEventRepository eventRepository) : IEventService
 
             if (!result.TryReserveSeats(seatCount))
                 throw new NoAvailableSeatsException("No available seats for this event");
-            
+
             result.AddBooking(bookingId);
 
             await PublishBookingConfirmedAsync(eventId, bookingId, userId, ct);
+            await eventRepository.InvalidateCacheAsync(eventId);
         }
         catch (Exception ex) when (ex is EventExpiredException or NoAvailableSeatsException)
         {
@@ -123,6 +135,19 @@ public class EventService(IEventRepository eventRepository) : IEventService
         {
             semaphore.Release();
         }
+    }
+
+    public async Task ReleaseBookingAsync(Guid eventId, Guid bookingId, int seatCount,
+        CancellationToken ct = default)
+    {
+        var entity = await eventRepository.GetTrackedByIdAsync(eventId, ct)
+                     ?? throw new KeyNotFoundException($"Event with Id {eventId} not found");
+
+        entity.ReleaseSeats(seatCount);
+        entity.RemoveBooking(bookingId);
+
+        await eventRepository.SaveChangesAsync(ct);
+        await eventRepository.InvalidateCacheAsync(eventId);
     }
 
     private async Task PublishBookingConfirmedAsync(Guid eventId, Guid bookingId, Guid userId,

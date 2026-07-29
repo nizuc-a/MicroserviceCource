@@ -1,7 +1,7 @@
 # MicroserviceCourse — система управления мероприятиями
 
 Микросервисное приложение для управления событиями и бронированиями.  
-Реализовано на **ASP.NET Core 10**, **PostgreSQL**, **Apache Kafka** и **чистой архитектуре**.
+Реализовано на **ASP.NET Core 10**, **PostgreSQL**, **Apache Kafka**, **Redis** и **чистой архитектуре**.
 
 ---
 
@@ -10,6 +10,7 @@
 - [Состав системы](#состав-системы)
 - [Архитектура](#архитектура)
 - [Поток данных через Kafka](#поток-данных-через-kafka)
+- [Стратегия кеширования](#стратегия-кеширования)
 - [Запуск проекта](#запуск-проекта)
 - [API Endpoints](#api-endpoints)
 - [Аутентификация и авторизация](#аутентификация-и-авторизация)
@@ -28,6 +29,7 @@
 | **events-db** | PostgreSQL для EventService | 5434 |
 | **bookings-db** | PostgreSQL для BookingService | 5435 |
 | **Kafka + Zookeeper** | Асинхронный обмен сообщениями | 9092 |
+| **Redis** | Кеш EventService (событие по id, топ-10) | 6379 |
 
 Общие проекты:
 
@@ -109,6 +111,62 @@ POST /events/{eventId}/book
 
 ---
 
+## Стратегия кеширования
+
+EventService использует **Redis** и паттерн **Cache-Aside** для снижения нагрузки на PostgreSQL на горячих чтениях.
+
+### Что кешируется и почему
+
+| Сценарий | Ключ | TTL (по умолчанию) | Зачем |
+|----------|------|--------------------|-------|
+| Событие по идентификатору (`GET /events/{id}`) | `event:{id}` | 1 мин (`Redis:EventTtlMinutes`) | Частый точечный доступ; короткая свежесть |
+| Топ-10 по проценту продаж (`GET /events/top`) | `events:top10` | 5 мин (`Redis:TopTtlMinutes`) | Виджет главной без авторизации; небольшой лаг допустим |
+
+Процент продаж: `(total_seats - available_seats) / total_seats`.
+
+Слои:
+
+- абстракция `ICacheRepository` — в Application;
+- реализация `RedisRepository` (StackExchange.Redis) — в Infrastructure;
+- `IConnectionMultiplexer` регистрируется как **singleton** в DI.
+
+### Поведение при чтении
+
+1. Сначала запрос в Redis.
+2. При **попадании** в кеш база данных не вызывается.
+3. При **промахе** данные читаются из PostgreSQL и записываются в кеш с TTL.
+
+### Обновление кеша при изменении данных
+
+Для отдельного события выбрана **инвалидация при записи** (а не write-through):
+
+1. Сначала изменения сохраняются в БД.
+2. Затем удаляется ключ `event:{id}`.
+3. Следующий `GET` прогревает кеш заново.
+
+Инвалидация выполняется при:
+
+- `PUT /events/{id}` и `DELETE /events/{id}`;
+- обработке Kafka-сообщений, меняющих места: `BookingCreated` → `BookEvent`, `BookingCancelled` → `ReleaseBookingAsync`.
+
+Кеш топ-10 **не инвалидируется** на каждое бронирование: рейтинг — агрегат, для него достаточно TTL. Явная инвалидация при каждой броне была бы избыточной.
+
+Если процесс оборвётся между записью в БД и удалением ключа, база останется актуальной — кеш устареет максимум до истечения TTL, после чего обновится.
+
+### Недоступный Redis
+
+- `AbortOnConnectFail: false` — сервис стартует даже если Redis ещё не готов.
+- Ошибки соединения и десериализации в `RedisRepository` логируются и **не пробрасываются** клиенту: запрос идёт в базу как при промахе.
+
+### Конфигурация
+
+Секция `Redis` в [`EventService/EventService.Api/appsettings.json`](EventService/EventService.Api/appsettings.json):
+
+- локально: `Host: localhost:6379`;
+- в Docker Compose: переменная `Redis__Host=redis:6379` у `events-service`.
+
+---
+
 ## Запуск проекта
 
 ### Вариант 1: Вся система в Docker (рекомендуется)
@@ -116,11 +174,11 @@ POST /events/{eventId}/book
 ```bash
 git clone https://github.com/nizuc-a/MicroserviceCource.git
 cd MicroserviceCource
-git checkout sprint-9
+git checkout sprint-10
 docker compose up --build
 ```
 
-Поднимаются Zookeeper, Kafka, три базы данных и три API-сервиса. Миграции применяются автоматически при старте.
+Поднимаются Zookeeper, Kafka, Redis, три базы данных и три API-сервиса. Миграции применяются автоматически при старте.
 
 | Сервис | Swagger |
 |--------|---------|
@@ -139,7 +197,7 @@ docker compose down
 Поднять только инфраструктуру:
 
 ```bash
-docker compose up -d zookeeper kafka kafka-init users-db events-db bookings-db
+docker compose up -d zookeeper kafka kafka-init redis users-db events-db bookings-db
 ```
 
 Запустить каждый API в отдельном терминале:
@@ -168,7 +226,8 @@ cd BookingService/BookingService.Api && dotnet run
 | Метод | Эндпоинт | Описание | Доступ |
 |-------|----------|----------|--------|
 | GET | `/events` | Список событий (пагинация, фильтры) | Admin, User |
-| GET | `/events/{id}` | Событие по ID | Admin, User |
+| GET | `/events/top` | Топ-10 событий по проценту продаж (кеш Redis) | Без токена |
+| GET | `/events/{id}` | Событие по ID (кеш Redis) | Admin, User |
 | POST | `/events` | Создать событие | Admin |
 | PUT | `/events/{id}` | Обновить событие | Admin |
 | DELETE | `/events/{id}` | Удалить событие | Admin |
@@ -228,7 +287,7 @@ dotnet test
 | Проект | Описание |
 |--------|----------|
 | `UserService.UnitTests` | Юнит-тесты AuthService |
-| `EventService.UnitTests` | Юнит-тесты EventService, BookEvent |
+| `EventService.UnitTests` | Юнит-тесты EventService, BookEvent, кеш (hit / miss / инвалидация) |
 | `BookingService.UnitTests` | Юнит-тесты BookingService |
 | `*.IntegrationTests` | Интеграционные тесты с PostgreSQL (Testcontainers) |
 

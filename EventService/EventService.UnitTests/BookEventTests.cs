@@ -16,7 +16,8 @@ public class BookEventTests
     public BookEventTests()
     {
         SetupDbContext();
-        _eventService = new Application.Services.EventService(new EventRepository(_dbContext));
+        _eventService = new Application.Services.EventService(
+            new EventRepository(_dbContext, new NullCacheRepository(), TestRedisSettings.Default));
     }
 
     private void SetupDbContext()

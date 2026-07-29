@@ -10,6 +10,16 @@ public interface IEventRepository
 
     Task<Event?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
+    /// <summary>
+    /// Loads a tracked EF entity from the database, bypassing cache.
+    /// Use for mutations (book / cancel).
+    /// </summary>
+    Task<Event?> GetTrackedByIdAsync(Guid id, CancellationToken ct = default);
+
+    Task InvalidateCacheAsync(Guid id);
+    
+    Task<Event[]> GetTop(int count, CancellationToken ct = default);
+
     Task AddEventAsync(Event data, CancellationToken ct = default);
 
     Task UpdateEvent(Event data, CancellationToken ct = default);
