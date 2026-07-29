@@ -1,3 +1,6 @@
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shared.Api;
 using Shared.Domain.Settings;
 using UserService.Api.Services;
@@ -29,6 +32,24 @@ public static class ServiceCollectionExtensions
         services.AddSharedAppSettings(configuration);
         services.AddJwtBearerSwaggerGen("User Service API");
 
+        services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("UserService"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation()
+                    .AddOtlpExporter(o => o.Endpoint = new Uri(configuration["Otlp:Endpoint"]!));
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter();
+            });
+        
         return services;
     }
 }
