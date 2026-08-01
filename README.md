@@ -11,6 +11,7 @@
 - [Архитектура](#архитектура)
 - [Поток данных через Kafka](#поток-данных-через-kafka)
 - [Стратегия кеширования](#стратегия-кеширования)
+- [Наблюдаемость](#наблюдаемость)
 - [Запуск проекта](#запуск-проекта)
 - [API Endpoints](#api-endpoints)
 - [Аутентификация и авторизация](#аутентификация-и-авторизация)
@@ -30,6 +31,9 @@
 | **bookings-db** | PostgreSQL для BookingService | 5435 |
 | **Kafka + Zookeeper** | Асинхронный обмен сообщениями | 9092 |
 | **Redis** | Кеш EventService (событие по id, топ-10) | 6379 |
+| **Prometheus** | Сбор метрик с `/metrics` | 9090 |
+| **Jaeger** | UI и приём OTLP-трейсов | 16686 / 4317 |
+| **Grafana** | Дашборды по метрикам | 3000 |
 
 Общие проекты:
 
@@ -167,6 +171,52 @@ EventService использует **Redis** и паттерн **Cache-Aside** д
 
 ---
 
+## Наблюдаемость
+
+Во все три сервиса подключены **OpenTelemetry SDK**, **Serilog** (JSON-логи) и экспорт в стек мониторинга.
+
+| Инструмент | Назначение |
+|------------|------------|
+| **OpenTelemetry** | Трейсы (HTTP + EF Core) и метрики ASP.NET Core / .NET Runtime |
+| **Prometheus** | Скрейп эндпоинтов `/metrics` (конфиг [`prometheus.yml`](prometheus.yml)) |
+| **Jaeger** | Хранение и просмотр трейсов (OTLP gRPC `:4317`) |
+| **Grafana** | Дашборд latency / throughput / error rate ([`grafana/dashboards/aspnet-metrics.json`](grafana/dashboards/aspnet-metrics.json)) |
+| **Serilog** | Структурированные логи в Compact JSON в stdout |
+
+### UI мониторинга
+
+| Сервис | URL | Доступ |
+|--------|-----|--------|
+| Prometheus | http://localhost:9090 | — |
+| Jaeger | http://localhost:16686 | — |
+| Grafana | http://localhost:3000 | `admin` / `admin` |
+
+### Запуск стека мониторинга
+
+Вместе со всей системой:
+
+```bash
+docker compose up --build
+```
+
+Только инфраструктура + мониторинг (без сборки API):
+
+```bash
+docker compose up -d zookeeper kafka kafka-init redis users-db events-db bookings-db prometheus jaeger grafana
+```
+
+В Docker у сервисов задано `Otlp__Endpoint=http://jaeger:4317`. Локально в `appsettings.json` используется `http://localhost:4317`. Имя сервиса для трейсов/метрик берётся из `Otlp:ServiceName`.
+
+В Grafana добавьте datasource Prometheus с URL `http://prometheus:9090` (из контейнера) или `http://localhost:9090` (если Grafana запущена отдельно), затем импортируйте [`grafana/dashboards/aspnet-metrics.json`](grafana/dashboards/aspnet-metrics.json).
+
+Проверка:
+
+1. `http://localhost:5134/metrics` (и порты 5191, 5099) — формат Prometheus
+2. Jaeger UI — сервисы `UserService` / `EventService` / `BookingService`, спаны HTTP и SQL
+3. Prometheus → Status → Targets — все три job'а в состоянии UP
+
+---
+
 ## Запуск проекта
 
 ### Вариант 1: Вся система в Docker (рекомендуется)
@@ -174,11 +224,11 @@ EventService использует **Redis** и паттерн **Cache-Aside** д
 ```bash
 git clone https://github.com/nizuc-a/MicroserviceCource.git
 cd MicroserviceCource
-git checkout sprint-10
+git checkout sprint-11
 docker compose up --build
 ```
 
-Поднимаются Zookeeper, Kafka, Redis, три базы данных и три API-сервиса. Миграции применяются автоматически при старте.
+Поднимаются Zookeeper, Kafka, Redis, три базы данных, три API-сервиса, Prometheus, Jaeger и Grafana. Миграции применяются автоматически при старте.
 
 | Сервис | Swagger |
 |--------|---------|
@@ -197,7 +247,7 @@ docker compose down
 Поднять только инфраструктуру:
 
 ```bash
-docker compose up -d zookeeper kafka kafka-init redis users-db events-db bookings-db
+docker compose up -d zookeeper kafka kafka-init redis users-db events-db bookings-db prometheus jaeger grafana
 ```
 
 Запустить каждый API в отдельном терминале:
